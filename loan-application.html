@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Loan Application - Mwitari's Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>📝 Loan Application</h1>
+
+    <p>Please enter your loan details.</p>
+
+    <form onsubmit="submitLoan(event)">
+
+        <input
+            type="text"
+            id="memberName"
+            placeholder="Full Name"
+            required
+        >
+
+        <input
+            type="text"
+            id="memberNumber"
+            placeholder="Membership Number"
+            required
+        >
+
+        <input
+            type="number"
+            id="loanAmount"
+            placeholder="Loan Amount (KSh)"
+            min="1"
+            required
+        >
+
+        <input
+            type="text"
+            id="loanPurpose"
+            placeholder="Purpose of Loan"
+            required
+        >
+
+        <select id="repaymentPeriod" required>
+
+            <option value="">
+                Select Repayment Period
+            </option>
+          <option value="1 month">
+            1 month
+          </option>
+
+            <option value="3 Months">
+                3 Months
+            </option>
+
+            <option value="6 Months">
+                6 Months
+            </option>
+
+            <option value="9 Months">
+                9 Months
+            </option>
+
+            <option value="12 Months">
+                12 Months
+            </option>
+
+        </select>
+
+        <br><br>
+
+        <button type="submit">
+            Submit Loan Application
+        </button>
+
+    </form>
+
+    <br>
+
+    <button onclick="location.href='loans.html'">
+        ← Back to Loans
+    </button>
+
+</div>
+
+
+<script>
+
+function submitLoan(event) {
+
+    event.preventDefault();
+
+    const name =
+        document.getElementById("memberName").value;
+
+    const memberNumber =
+        document.getElementById("memberNumber").value;
+
+    const amount =
+        document.getElementById("loanAmount").value;
+
+    const purpose =
+        document.getElementById("loanPurpose").value;
+
+    const period =
+        document.getElementById("repaymentPeriod").value;
+
+
+    alert(
+        "Loan application submitted successfully!\n\n" +
+
+        "Member: " + name + "\n" +
+
+        "Membership No: " + memberNumber + "\n" +
+
+        "Loan Amount: KSh " + amount + "\n" +
+
+        "Purpose: " + purpose + "\n" +
+
+        "Repayment Period: " + period
+    );
+
+}
+
+</script>
+
+</body>
+
+</html>

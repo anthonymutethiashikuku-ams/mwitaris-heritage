@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitari's Heritage - Registration</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Mwitari's Heritage</h1>
+
+    <p>Member Registration</p>
+
+    <form id="registerForm">
+
+        <input
+            type="text"
+            id="fullName"
+            placeholder="Full Name"
+            required
+        >
+
+        <input
+            type="text"
+            id="memberNumber"
+            placeholder="Membership Number"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Email Address"
+            required
+        >
+
+        <input
+            type="tel"
+            id="phone"
+            placeholder="Phone Number"
+            required
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Create Password"
+            minlength="6"
+            required
+        >
+
+        <input
+            type="password"
+            id="confirmPassword"
+            placeholder="Confirm Password"
+            minlength="6"
+            required
+        >
+
+        <button type="submit">
+            Create Account
+        </button>
+
+    </form>
+
+    <br>
+
+    <button onclick="location.href='index.html'">
+        Back to Login
+    </button>
+
+</div>
+
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    doc,
+    setDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+document.getElementById("registerForm")
+.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const fullName =
+        document.getElementById("fullName").value.trim();
+
+    const memberNumber =
+        document.getElementById("memberNumber").value.trim();
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const phone =
+        document.getElementById("phone").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+
+    if (password !== confirmPassword) {
+
+        alert("The passwords do not match.");
+
+        return;
+    }
+
+
+    try {
+
+        const userCredential =
+            await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+        const user = userCredential.user;
+
+
+        await setDoc(
+            doc(db, "members", user.uid),
+            {
+
+                uid: user.uid,
+
+                fullName: fullName,
+
+                memberNumber: memberNumber,
+
+                email: email,
+
+                phone: phone,
+
+                role: "member",
+
+                loanAmount: 0,
+
+                loanRepaid: 0,
+
+                loanBalance: 0,
+
+                savings: 0,
+
+                bankName: "",
+
+                accountNumber: ""
+
+            }
+        );
+
+
+        alert(
+            "Registration successful! You can now log in."
+        );
+
+        window.location.href = "index.html";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        if (error.code === "auth/email-already-in-use") {
+
+            alert("This email is already registered.");
+
+        } else if (error.code === "auth/weak-password") {
+
+            alert("Password must be at least 6 characters.");
+
+        } else {
+
+            alert(
+                "Registration failed: " + error.message
+            );
+        }
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

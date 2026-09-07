@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitari's Heritage - Admin Login</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Mwitari's Heritage</h1>
+
+    <p>Administrator Login</p>
+
+    <form id="adminLoginForm">
+
+        <input
+            type="email"
+            id="adminEmail"
+            placeholder="Administrator Email"
+            required
+        >
+
+        <input
+            type="password"
+            id="adminPassword"
+            placeholder="Administrator Password"
+            required
+        >
+
+        <button type="submit">
+            Administrator Login
+        </button>
+
+    </form>
+
+    <p id="loginMessage"></p>
+
+    <br>
+
+    <button onclick="location.href='index.html'">
+        Back to Member Login
+    </button>
+
+</div>
+
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    signInWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const form =
+    document.getElementById("adminLoginForm");
+
+const message =
+    document.getElementById("loginMessage");
+
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const email =
+        document.getElementById("adminEmail").value.trim();
+
+    const password =
+        document.getElementById("adminPassword").value;
+
+
+    message.textContent = "Checking login...";
+
+
+    try {
+
+        // Sign in through Firebase Authentication
+        const userCredential =
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+
+        const user =
+            userCredential.user;
+
+
+        // Find administrator record in Firestore
+        const adminRef =
+            doc(db, "members", user.uid);
+
+        const adminSnap =
+            await getDoc(adminRef);
+
+
+        if (
+            adminSnap.exists() &&
+            adminSnap.data().role === "admin"
+        ) {
+
+            // Administrator confirmed
+            window.location.href =
+                "admin-dashboard.html";
+
+        } else {
+
+            // Account exists but is not an administrator
+            await signOut(auth);
+
+            message.textContent =
+                "This account does not have administrator privileges.";
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Incorrect administrator email or password.";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

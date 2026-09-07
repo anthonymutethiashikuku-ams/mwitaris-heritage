@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Loan Balance - Mwitari's Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>💰 Loan Balance</h1>
+
+    <p>
+        Enter your membership number to check your
+        outstanding loan balance.
+    </p>
+
+    <form onsubmit="checkBalance(event)">
+
+        <input
+            type="text"
+            id="memberNumber"
+            placeholder="Membership Number"
+            required
+        >
+
+        <button type="submit">
+            Check Balance
+        </button>
+
+    </form>
+
+    <br>
+
+    <div id="balanceResult"></div>
+
+    <br>
+
+    <button onclick="location.href='loans.html'">
+        ← Back to Loans
+    </button>
+
+    <br><br>
+
+    <button onclick="location.href='dashboard.html'">
+        🏠 Back to Dashboard
+    </button>
+
+</div>
+
+
+<script>
+
+function checkBalance(event) {
+
+    event.preventDefault();
+
+    const memberNumber =
+        document.getElementById("memberNumber").value;
+
+
+    /*
+       DEMONSTRATION MEMBER
+
+       This is sample information only.
+    */
+
+    if (memberNumber === "MH001") {
+
+        document.getElementById("balanceResult").innerHTML = `
+
+            <h2>Loan Details</h2>
+
+            <p>
+                <strong>Membership No:</strong>
+                MH001
+            </p>
+
+            <p>
+                <strong>Original Loan:</strong>
+                KSh 50,000
+            </p>
+
+            <p>
+                <strong>Amount Repaid:</strong>
+                KSh 20,000
+            </p>
+
+            <p>
+                <strong>Outstanding Balance:</strong>
+                KSh 30,000
+            </p>
+
+        `;
+
+    }
+
+    else {
+
+        document.getElementById("balanceResult").innerHTML = `
+
+            <p>
+                Membership number not found.
+            </p>
+
+        `;
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

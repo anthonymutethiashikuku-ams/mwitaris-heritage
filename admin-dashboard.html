@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitari's Heritage - Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Mwitari's Heritage</h1>
+
+    <h2>Administrator Dashboard</h2>
+
+    <p id="welcomeMessage">
+        Checking administrator account...
+    </p>
+
+
+    <button onclick="location.href='admin-members.html'">
+        👥 Manage Members
+    </button>
+
+    <br><br>
+
+
+    <button onclick="location.href='admin-members.html'">
+        💰 Manage Loans
+    </button>
+
+    <br><br>
+
+
+    <button onclick="location.href='admin-members.html'">
+        💵 Manage Savings
+    </button>
+
+    <br><br>
+
+
+    <button onclick="location.href='admin-members.html'">
+        🏦 Manage Bank Details
+    </button>
+
+    <br><br>
+
+
+    <button onclick="location.href='bylaws.html'">
+        📖 Bylaws
+    </button>
+
+    <br><br>
+
+
+    <button id="logoutButton">
+        🚪 Logout
+    </button>
+
+</div>
+
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const welcomeMessage =
+    document.getElementById("welcomeMessage");
+
+
+/*
+   Check whether somebody is actually logged in.
+*/
+
+onAuthStateChanged(auth, async function(user) {
+
+    if (!user) {
+
+        // Nobody is logged in
+        window.location.href =
+            "admin-login.html";
+
+        return;
+    }
+
+
+    try {
+
+        // Get the user's Firestore record
+        const userRef =
+            doc(db, "members", user.uid);
+
+        const userSnap =
+            await getDoc(userRef);
+
+
+        if (
+            !userSnap.exists() ||
+            userSnap.data().role !== "admin"
+        ) {
+
+            // Not an administrator
+            await signOut(auth);
+
+            window.location.href =
+                "admin-login.html";
+
+            return;
+        }
+
+
+        const adminData =
+            userSnap.data();
+
+
+        welcomeMessage.textContent =
+            "Welcome, " +
+            (adminData.fullName || "Administrator");
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        welcomeMessage.textContent =
+            "Unable to verify administrator account.";
+
+    }
+
+});
+
+
+/*
+   Logout
+*/
+
+document.getElementById("logoutButton")
+.addEventListener("click", async function() {
+
+    try {
+
+        await signOut(auth);
+
+        window.location.href =
+            "admin-login.html";
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Could not log out.");
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

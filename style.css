@@ -1,0 +1,117 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    body {
+    font-family: Arial, sans-serif;
+
+    background-image: url("family_beach_coastline-1.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+}
+
+.login-container {
+    background: transparent;
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 15px;
+
+    text-align: center;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.login-container h1 {
+    margin-bottom: 10px;
+}
+
+.login-container p {
+    margin-bottom: 25px;
+    color: #666;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    margin-bottom: 15px;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+
+    border: none;
+    border-radius: 8px;
+
+    background:orange;
+    color: black;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.dashboard {
+    width: 95%;
+    max-width: 900px;
+    text-align: center;
+}
+
+.dashboard h1 {
+    margin-bottom: 10px;
+}
+
+.dashboard > p {
+    margin-bottom: 30px;
+    color: transparent;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: orange;
+    padding: 30px 20px;
+    border-radius: 15px;
+
+    text-decoration: none;
+    color: #222;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+}
+
+.card:first-letter {
+    font-size: 40px;
+}
+
+.card h2 {
+    margin: 15px 0 10px;
+}
+
+.card p {
+    color: orange;
+}
