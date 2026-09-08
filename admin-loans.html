@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Loans | Mwitari's Heritage</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <h1>Admin Loan Management</h1>
+    <p>Manage members' loans and payments.</p>
+
+    <button onclick="window.location.href='admin-dashboard.html'">
+        ← Back to Admin Dashboard
+    </button>
+
+    <hr>
+
+    <label for="memberSelect">Select Member</label>
+    <select id="memberSelect">
+        <option value="">-- Select Member --</option>
+    </select>
+
+    <div id="loanSection" style="display:none;">
+
+        <h2>Loan Information</h2>
+
+        <p><strong>Member:</strong> <span id="memberName"></span></p>
+        <p><strong>Member Number:</strong> <span id="memberNumber"></span></p>
+
+        <label>Loan Amount (KSh)</label>
+        <input type="number" id="loanAmount" min="0">
+
+        <label>Amount Paid (KSh)</label>
+        <input type="number" id="loanPaid" min="0">
+
+        <label>Remaining Balance (KSh)</label>
+        <input type="number" id="loanBalance" readonly>
+
+        <button id="saveLoan">Save Loan Changes</button>
+
+        <p id="loanMessage"></p>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const memberSelect = document.getElementById("memberSelect");
+
+const loanSection = document.getElementById("loanSection");
+
+const memberName = document.getElementById("memberName");
+const memberNumber = document.getElementById("memberNumber");
+
+const loanAmount = document.getElementById("loanAmount");
+const loanPaid = document.getElementById("loanPaid");
+const loanBalance = document.getElementById("loanBalance");
+
+const saveLoan = document.getElementById("saveLoan");
+const loanMessage = document.getElementById("loanMessage");
+
+let members = {};
+
+/* Check administrator */
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "admin-login.html";
+        return;
+    }
+
+    const adminRef = doc(db, "members", user.uid);
+    const adminSnap = await getDoc(adminRef);
+
+    if (!adminSnap.exists() || adminSnap.data().role !== "admin") {
+
+        alert("Access denied. Administrator privileges required.");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    loadMembers();
+});
+
+
+/* Load members */
+
+async function loadMembers() {
+
+    try {
+
+        const snapshot = await getDocs(collection(db, "members"));
+
+        snapshot.forEach((memberDoc) => {
+
+            const data = memberDoc.data();
+
+            members[memberDoc.id] = data;
+
+            const option = document.createElement("option");
+
+            option.value = memberDoc.id;
+
+            option.textContent =
+                `${data.fullName || "Unnamed Member"} - ${data.memberNumber || memberDoc.id}`;
+
+            memberSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Unable to load members.");
+
+    }
+}
+
+
+/* Select member */
+
+memberSelect.addEventListener("change", () => {
+
+    const uid = memberSelect.value;
+
+    if (!uid) {
+
+        loanSection.style.display = "none";
+        return;
+
+    }
+
+    const data = members[uid];
+
+    loanSection.style.display = "block";
+
+    memberName.textContent = data.fullName || "N/A";
+
+    memberNumber.textContent = data.memberNumber || "N/A";
+
+    loanAmount.value = data.loanAmount || 0;
+
+    loanPaid.value = data.loanPaid || 0;
+
+    calculateBalance();
+
+});
+
+
+/* Calculate balance */
+
+loanAmount.addEventListener("input", calculateBalance);
+loanPaid.addEventListener("input", calculateBalance);
+
+function calculateBalance() {
+
+    const amount = Number(loanAmount.value) || 0;
+    const paid = Number(loanPaid.value) || 0;
+
+    loanBalance.value = Math.max(amount - paid, 0);
+
+}
+
+
+/* Save changes */
+
+saveLoan.addEventListener("click", async () => {
+
+    const uid = memberSelect.value;
+
+    if (!uid) {
+        alert("Please select a member.");
+        return;
+    }
+
+    const amount = Number(loanAmount.value) || 0;
+    const paid = Number(loanPaid.value) || 0;
+
+    if (paid > amount) {
+
+        alert("Amount paid cannot be greater than the loan amount.");
+        return;
+
+    }
+
+    try {
+
+        await updateDoc(doc(db, "members", uid), {
+
+            loanAmount: amount,
+            loanPaid: paid,
+            loanBalance: amount - paid
+
+        });
+
+        members[uid].loanAmount = amount;
+        members[uid].loanPaid = paid;
+        members[uid].loanBalance = amount - paid;
+
+        loanMessage.textContent =
+            "Loan information updated successfully.";
+
+    } catch (error) {
+
+        console.error(error);
+
+        loanMessage.textContent =
+            "Failed to update loan information.";
+
+    }
+
+});
+
+</script>
+
+</body>
+  </html>
