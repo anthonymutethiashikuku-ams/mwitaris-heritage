@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Savings | Mwitari's Heritage</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <h1>Admin Savings Management</h1>
+
+    <button onclick="window.location.href='admin-dashboard.html'">
+        ← Back to Admin Dashboard
+    </button>
+
+    <hr>
+
+    <label>Select Member</label>
+
+    <select id="memberSelect">
+        <option value="">-- Select Member --</option>
+    </select>
+
+    <div id="savingsSection" style="display:none;">
+
+        <h2>Savings Information</h2>
+
+        <p>
+            <strong>Member:</strong>
+            <span id="memberName"></span>
+        </p>
+
+        <p>
+            <strong>Member Number:</strong>
+            <span id="memberNumber"></span>
+        </p>
+
+        <label>Savings Balance (KSh)</label>
+
+        <input
+            type="number"
+            id="savingsBalance"
+            min="0"
+            step="0.01"
+        >
+
+        <button id="saveSavings">
+            Save Savings Changes
+        </button>
+
+        <p id="message"></p>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const memberSelect =
+    document.getElementById("memberSelect");
+
+const savingsSection =
+    document.getElementById("savingsSection");
+
+const memberName =
+    document.getElementById("memberName");
+
+const memberNumber =
+    document.getElementById("memberNumber");
+
+const savingsBalance =
+    document.getElementById("savingsBalance");
+
+const saveSavings =
+    document.getElementById("saveSavings");
+
+const message =
+    document.getElementById("message");
+
+
+let members = {};
+
+
+/* Check admin */
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href = "admin-login.html";
+        return;
+
+    }
+
+    const adminRef =
+        doc(db, "members", user.uid);
+
+    const adminSnap =
+        await getDoc(adminRef);
+
+    if (
+        !adminSnap.exists() ||
+        adminSnap.data().role !== "admin"
+    ) {
+
+        alert("Access denied.");
+
+        window.location.href =
+            "dashboard.html";
+
+        return;
+
+    }
+
+    loadMembers();
+
+});
+
+
+/* Load members */
+
+async function loadMembers() {
+
+    try {
+
+        const snapshot =
+            await getDocs(collection(db, "members"));
+
+        snapshot.forEach((memberDoc) => {
+
+            const data = memberDoc.data();
+
+            members[memberDoc.id] = data;
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                memberDoc.id;
+
+            option.textContent =
+                `${data.fullName || "Unnamed Member"} - ${data.memberNumber || memberDoc.id}`;
+
+            memberSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load members.");
+
+    }
+
+}
+
+
+/* Select member */
+
+memberSelect.addEventListener(
+    "change",
+    () => {
+
+        const uid =
+            memberSelect.value;
+
+        if (!uid) {
+
+            savingsSection.style.display =
+                "none";
+
+            return;
+
+        }
+
+        const data =
+            members[uid];
+
+        savingsSection.style.display =
+            "block";
+
+        memberName.textContent =
+            data.fullName || "N/A";
+
+        memberNumber.textContent =
+            data.memberNumber || "N/A";
+
+        savingsBalance.value =
+            data.savingsBalance || 0;
+
+    }
+);
+
+
+/* Save savings */
+
+saveSavings.addEventListener(
+    "click",
+    async () => {
+
+        const uid =
+            memberSelect.value;
+
+        if (!uid) {
+
+            alert("Please select a member.");
+
+            return;
+
+        }
+
+        const balance =
+            Number(savingsBalance.value) || 0;
+
+        if (balance < 0) {
+
+            alert("Savings cannot be negative.");
+
+            return;
+
+        }
+
+        try {
+
+            await updateDoc(
+                doc(db, "members", uid),
+                {
+                    savingsBalance: balance
+                }
+            );
+
+            members[uid].savingsBalance =
+                balance;
+
+            message.textContent =
+                "Savings information updated successfully.";
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "Failed to update savings.";
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+          </html>
