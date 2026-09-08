@@ -3,58 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Document Test</title>
+    <title>Firebase Server Test</title>
 </head>
 
 <body>
 
-<h2>Firebase Document Test</h2>
+<h2>Firebase Server Connection Test</h2>
 
-<button id="testBtn">Check Member Document</button>
+<button id="testBtn">Test Firestore Server</button>
 
 <pre id="result">Press the button...</pre>
 
 <script type="module">
 
-import { db } from "./firebase.js?v=3";
+import { db } from "./firebase.js?v=4";
 
 import {
     doc,
-    getDoc
+    getDocFromServer
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const result = document.getElementById("result");
 
 document.getElementById("testBtn").onclick = async () => {
 
-    result.textContent = "Checking...\n";
+    result.textContent = "Contacting Firestore server...\n\n";
 
     try {
 
-        const memberRef = doc(
+        const ref = doc(
             db,
             "members",
             "II2LfPfbC8UT7ezGPsDejA2awHE3"
         );
 
-        const snapshot = await getDoc(memberRef);
+        const snapshot = await getDocFromServer(ref);
 
         result.textContent +=
-            "Document exists: " + snapshot.exists() + "\n\n";
+            "SUCCESS!\n\n" +
+            "Firestore server is reachable.\n\n" +
+            "Document exists: " +
+            snapshot.exists();
 
         if (snapshot.exists()) {
             result.textContent +=
+                "\n\nDocument data:\n" +
                 JSON.stringify(snapshot.data(), null, 2);
-        } else {
-            result.textContent +=
-                "Firebase cannot find this document.";
         }
 
     } catch (error) {
 
         result.textContent =
             "ERROR\n\n" +
-            "Code: " + error.code + "\n" +
+            "Code: " + error.code + "\n\n" +
             "Message: " + error.message;
 
         console.error(error);
