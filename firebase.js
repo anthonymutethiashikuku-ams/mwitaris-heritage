@@ -1,13 +1,4 @@
-import { initializeApp } from
-    "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import { getAuth } from
-    "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-import { getFirestore } from
-    "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDPjZb2zO2uJZUveETWJeERRIyd1SGmKsA",
     authDomain: "mwitari-s-heritage.firebaseapp.com",
@@ -18,8 +9,27 @@ const firebaseConfig = {
     measurementId: "G-J981E6KWN6"
 };
 
+import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import { getAuth } from
+    "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import { initializeFirestore } from
+    "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+
+// Firebase Authentication
 export const auth = getAuth(app);
 
-export const db = getFirestore(app);
+
+// Firestore
+// Force long polling for better compatibility with
+// some Android browsers and mobile networks.
+export const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true
+});
