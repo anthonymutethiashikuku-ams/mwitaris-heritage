@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "site": "mwitari-s-heritage",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true
+  }
+}
