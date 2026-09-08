@@ -29,3 +29,4 @@ jobs:
         run: firebase deploy --only hosting --project mwitari-s-heritage
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./firebase-service-account.json
+# Firebase deployment workflow
