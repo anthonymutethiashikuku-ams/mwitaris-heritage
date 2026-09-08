@@ -3,63 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Diagnostic</title>
+    <title>Firebase Document Test</title>
 </head>
 
 <body>
 
-<h2>Firebase Diagnostic Test</h2>
+<h2>Firebase Document Test</h2>
 
-<button id="testBtn">Test Firebase</button>
+<button id="testBtn">Check Member Document</button>
 
 <pre id="result">Press the button...</pre>
 
 <script type="module">
 
-import { db } from "./firebase.js?v=2";
+import { db } from "./firebase.js?v=3";
 
 import {
-    collection,
-    getDocs
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const result = document.getElementById("result");
 
 document.getElementById("testBtn").onclick = async () => {
 
-    result.textContent = "Testing...\n";
+    result.textContent = "Checking...\n";
 
     try {
 
-        // Show the Firebase project being used
-        const projectId = db.app.options.projectId;
-
-        result.textContent +=
-            "Firebase Project: " + projectId + "\n\n";
-
-        // Read members
-        const snapshot = await getDocs(
-            collection(db, "members")
+        const memberRef = doc(
+            db,
+            "members",
+            "II2LfPfbC8UT7ezGPsDejA2awHE3"
         );
 
+        const snapshot = await getDoc(memberRef);
+
         result.textContent +=
-            "Members found: " + snapshot.size + "\n\n";
+            "Document exists: " + snapshot.exists() + "\n\n";
 
-        if (snapshot.size === 0) {
-
+        if (snapshot.exists()) {
             result.textContent +=
-                "WARNING: No members were returned.\n";
-
+                JSON.stringify(snapshot.data(), null, 2);
         } else {
-
-            snapshot.forEach((doc) => {
-
-                result.textContent +=
-                    "Document ID: " + doc.id + "\n";
-
-                result.textContent +=
-                    JSON.stringify(doc.data(), null, 2) + "\n\n";
-            });
+            result.textContent +=
+                "Firebase cannot find this document.";
         }
 
     } catch (error) {
