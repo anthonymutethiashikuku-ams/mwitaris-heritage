@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Firebase Test</title>
+</head>
+
+<body>
+
+<h2>Firebase Connection Test</h2>
+
+<button id="testBtn">Test Firestore</button>
+
+<p id="result">Waiting...</p>
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const result = document.getElementById("result");
+
+document.getElementById("testBtn").addEventListener("click", async () => {
+
+    result.textContent = "Connecting to Firestore...";
+
+    try {
+
+        const snapshot = await getDocs(collection(db, "members"));
+
+        result.textContent =
+            "SUCCESS! Firestore is connected. Members found: "
+            + snapshot.size;
+
+    } catch (error) {
+
+        result.textContent =
+            "ERROR: " + error.code + " — " + error.message;
+
+        console.error(error);
+    }
+
+});
+
+</script>
+
+</body>
+</html>
