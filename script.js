@@ -1,17 +1,40 @@
-function login(event) {
+import { auth } from "./firebase.js";
+
+import {
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+window.login = async function(event) {
 
     event.preventDefault();
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const email =
+        document.getElementById("username").value.trim();
 
-    if (username !== "" && password !== "") {
+    const password =
+        document.getElementById("password").value;
 
+
+    try {
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        // Login successful
         window.location.href = "dashboard.html";
 
-    } else {
 
-        alert("Please enter your login details.");
+    } catch (error) {
+
+        console.error(error);
+
+        // Login failed
+        alert("Incorrect email or password. Please try again.");
 
     }
-}
+
+};

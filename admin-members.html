@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Member Management - Mwitari's Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>👥 Member Management</h1>
+
+    <p>Search for a registered member.</p>
+
+    <input
+        type="text"
+        id="searchNumber"
+        placeholder="Membership Number"
+    >
+
+    <button onclick="searchMember()">
+        Search Member
+    </button>
+
+    <br><br>
+
+    <div id="memberDetails"></div>
+
+    <br>
+
+    <button onclick="location.href='admin-dashboard.html'">
+        ← Admin Dashboard
+    </button>
+
+</div>
+
+
+<script>
+
+/*
+    DEMONSTRATION MEMBER RECORD.
+
+    In the real version this information
+    will come from the database.
+*/
+
+const member = {
+
+    number: "MH001",
+
+    name: "Sample Member",
+
+    phone: "0700000000",
+
+    email: "member@example.com",
+
+    bank: "Example Bank",
+
+    account: "0000000000"
+
+};
+
+
+function searchMember() {
+
+    const number =
+        document.getElementById("searchNumber").value;
+
+    if (number === member.number) {
+
+        document.getElementById("memberDetails").innerHTML = `
+
+            <h2>Member Details</h2>
+
+            <form onsubmit="updateMember(event)">
+
+                <input
+                    type="text"
+                    id="name"
+                    value="${member.name}"
+                    placeholder="Full Name"
+                    required
+                >
+
+                <input
+                    type="text"
+                    id="phone"
+                    value="${member.phone}"
+                    placeholder="Phone Number"
+                    required
+                >
+
+                <input
+                    type="email"
+                    id="email"
+                    value="${member.email}"
+                    placeholder="Email Address"
+                    required
+                >
+
+                <h3>Bank Details</h3>
+
+                <input
+                    type="text"
+                    id="bank"
+                    value="${member.bank}"
+                    placeholder="Bank Name"
+                    required
+                >
+
+                <input
+                    type="text"
+                    id="account"
+                    value="${member.account}"
+                    placeholder="Account Number"
+                    required
+                >
+
+                <button type="submit">
+                    Update Member
+                </button>
+
+            </form>
+
+        `;
+
+    }
+
+    else {
+
+        document.getElementById("memberDetails").innerHTML =
+
+            "<p>Member not found.</p>";
+
+    }
+
+}
+
+
+function updateMember(event) {
+
+    event.preventDefault();
+
+    alert(
+        "Member information has been updated successfully."
+    );
+
+}
+
+</script>
+
+</body>
+
+</html>

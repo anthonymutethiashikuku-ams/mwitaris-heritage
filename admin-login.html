@@ -2,12 +2,16 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Mwitari's Heritage - Admin Login</title>
 
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -18,31 +22,39 @@
 
     <p>Administrator Login</p>
 
+
     <form id="adminLoginForm">
 
         <input
             type="email"
             id="adminEmail"
             placeholder="Administrator Email"
+            autocomplete="email"
             required
         >
+
 
         <input
             type="password"
             id="adminPassword"
             placeholder="Administrator Password"
+            autocomplete="current-password"
             required
         >
 
-        <button type="submit">
+
+        <button type="submit" id="loginButton">
             Administrator Login
         </button>
 
     </form>
 
+
     <p id="loginMessage"></p>
 
+
     <br>
+
 
     <button onclick="location.href='index.html'">
         Back to Member Login
@@ -66,30 +78,60 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
+
 const form =
     document.getElementById("adminLoginForm");
 
 const message =
     document.getElementById("loginMessage");
 
+const loginButton =
+    document.getElementById("loginButton");
+
+
 
 form.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
+
     const email =
-        document.getElementById("adminEmail").value.trim();
+        document.getElementById("adminEmail")
+        .value
+        .trim();
 
     const password =
-        document.getElementById("adminPassword").value;
+        document.getElementById("adminPassword")
+        .value;
 
 
-    message.textContent = "Checking login...";
+    if (!email || !password) {
+
+        message.textContent =
+            "Please enter your administrator email and password.";
+
+        return;
+    }
+
+
+    loginButton.disabled = true;
+
+    loginButton.textContent =
+        "Checking...";
+
+    message.textContent =
+        "Authenticating administrator...";
 
 
     try {
 
-        // Sign in through Firebase Authentication
+        /*
+        ==========================================
+        STEP 1
+        Firebase Authentication
+        ==========================================
+        */
+
         const userCredential =
             await signInWithEmailAndPassword(
                 auth,
@@ -102,39 +144,260 @@ form.addEventListener("submit", async function(event) {
             userCredential.user;
 
 
-        // Find administrator record in Firestore
+        console.log(
+            "Firebase Authentication successful."
+        );
+
+        console.log(
+            "Administrator UID:",
+            user.uid
+        );
+
+        console.log(
+            "Administrator email:",
+            user.email
+        );
+
+
+
+        /*
+        ==========================================
+        STEP 2
+        Find the administrator's Firestore record
+        ==========================================
+        */
+
         const adminRef =
-            doc(db, "members", user.uid);
+            doc(
+                db,
+                "members",
+                user.uid
+            );
+
 
         const adminSnap =
             await getDoc(adminRef);
 
 
-        if (
-            adminSnap.exists() &&
-            adminSnap.data().role === "admin"
-        ) {
 
-            // Administrator confirmed
-            window.location.href =
-                "admin-dashboard.html";
+        /*
+        ==========================================
+        STEP 3
+        Check whether the document exists
+        ==========================================
+        */
 
-        } else {
+        if (!adminSnap.exists()) {
 
-            // Account exists but is not an administrator
             await signOut(auth);
 
-            message.textContent =
-                "This account does not have administrator privileges.";
 
+            message.textContent =
+                "Authentication succeeded, but no administrator record was found in the members collection.";
+
+            console.error(
+                "No Firestore document found for UID:",
+                user.uid
+            );
+
+
+            loginButton.disabled = false;
+
+            loginButton.textContent =
+                "Administrator Login";
+
+            return;
         }
+
+
+
+        /*
+        ==========================================
+        STEP 4
+        Read administrator information
+        ==========================================
+        */
+
+        const adminData =
+            adminSnap.data();
+
+
+        console.log(
+            "Administrator Firestore data:",
+            adminData
+        );
+
+        console.log(
+            "Administrator role:",
+            adminData.role
+        );
+
+
+
+        /*
+        ==========================================
+        STEP 5
+        Verify administrator role
+        ==========================================
+        */
+
+        if (adminData.role !== "admin") {
+
+            await signOut(auth);
+
+
+            message.textContent =
+                "Login successful, but this account is not an administrator. The Firestore role must be exactly: admin";
+
+
+            console.error(
+                "Incorrect administrator role:",
+                adminData.role
+            );
+
+
+            loginButton.disabled = false;
+
+            loginButton.textContent =
+                "Administrator Login";
+
+            return;
+        }
+
+
+
+        /*
+        ==========================================
+        STEP 6
+        Administrator confirmed
+        ==========================================
+        */
+
+        message.textContent =
+            "Administrator verified. Opening dashboard...";
+
+
+        console.log(
+            "ADMINISTRATOR VERIFIED"
+        );
+
+
+        window.location.href =
+            "admin-dashboard.html";
+
+
 
     } catch (error) {
 
-        console.error(error);
+        /*
+        ==========================================
+        DISPLAY THE ACTUAL FIREBASE ERROR
+        ==========================================
+        */
+
+        console.error(
+            "ADMIN LOGIN ERROR:",
+            error
+        );
+
+        console.error(
+            "Error code:",
+            error.code
+        );
+
+        console.error(
+            "Error message:",
+            error.message
+        );
+
+
+        let errorMessage =
+            "Login failed.";
+
+
+        /*
+        Firebase Authentication errors
+        */
+
+        if (
+            error.code ===
+            "auth/invalid-credential"
+        ) {
+
+            errorMessage =
+                "Invalid administrator email or password.";
+
+        }
+
+        else if (
+            error.code ===
+            "auth/user-not-found"
+        ) {
+
+            errorMessage =
+                "No Firebase account exists with this email.";
+
+        }
+
+        else if (
+            error.code ===
+            "auth/wrong-password"
+        ) {
+
+            errorMessage =
+                "The administrator password is incorrect.";
+
+        }
+
+        else if (
+            error.code ===
+            "auth/invalid-email"
+        ) {
+
+            errorMessage =
+                "The administrator email address is invalid.";
+
+        }
+
+        else if (
+            error.code ===
+            "auth/too-many-requests"
+        ) {
+
+            errorMessage =
+                "Too many login attempts. Please wait and try again.";
+
+        }
+
+        else if (
+            error.code ===
+            "permission-denied"
+        ) {
+
+            errorMessage =
+                "Firestore permission denied. Check your Firestore Security Rules.";
+
+        }
+
+        else {
+
+            errorMessage =
+                "Firebase error: " +
+                error.code +
+                " — " +
+                error.message;
+
+        }
+
 
         message.textContent =
-            "Incorrect administrator email or password.";
+            errorMessage;
+
+
+        loginButton.disabled = false;
+
+        loginButton.textContent =
+            "Administrator Login";
 
     }
 

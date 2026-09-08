@@ -4,7 +4,6 @@
     padding: 0;
 }
 
-body {
     body {
     font-family: Arial, sans-serif;
 
@@ -20,7 +19,6 @@ body {
     justify-content: center;
     align-items: center;
     }
-}
 
 .login-container {
     background: transparent;
