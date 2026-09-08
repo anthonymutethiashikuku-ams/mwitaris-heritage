@@ -2,50 +2,76 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Firebase Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Diagnostic</title>
 </head>
 
 <body>
 
-<h2>Firebase Connection Test</h2>
+<h2>Firebase Diagnostic Test</h2>
 
-<button id="testBtn">Test Firestore</button>
+<button id="testBtn">Test Firebase</button>
 
-<p id="result">Waiting...</p>
+<pre id="result">Press the button...</pre>
 
 <script type="module">
 
-import { db } from "./firebase.js";
+import { db } from "./firebase.js?v=2";
 
 import {
     collection,
     getDocs
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-
 const result = document.getElementById("result");
 
-document.getElementById("testBtn").addEventListener("click", async () => {
+document.getElementById("testBtn").onclick = async () => {
 
-    result.textContent = "Connecting to Firestore...";
+    result.textContent = "Testing...\n";
 
     try {
 
-        const snapshot = await getDocs(collection(db, "members"));
+        // Show the Firebase project being used
+        const projectId = db.app.options.projectId;
 
-        result.textContent =
-            "SUCCESS! Firestore is connected. Members found: "
-            + snapshot.size;
+        result.textContent +=
+            "Firebase Project: " + projectId + "\n\n";
+
+        // Read members
+        const snapshot = await getDocs(
+            collection(db, "members")
+        );
+
+        result.textContent +=
+            "Members found: " + snapshot.size + "\n\n";
+
+        if (snapshot.size === 0) {
+
+            result.textContent +=
+                "WARNING: No members were returned.\n";
+
+        } else {
+
+            snapshot.forEach((doc) => {
+
+                result.textContent +=
+                    "Document ID: " + doc.id + "\n";
+
+                result.textContent +=
+                    JSON.stringify(doc.data(), null, 2) + "\n\n";
+            });
+        }
 
     } catch (error) {
 
         result.textContent =
-            "ERROR: " + error.code + " — " + error.message;
+            "ERROR\n\n" +
+            "Code: " + error.code + "\n" +
+            "Message: " + error.message;
 
         console.error(error);
     }
-
-});
+};
 
 </script>
 
