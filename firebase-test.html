@@ -1,43 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Firebase Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Connection Test</title>
 </head>
+
 <body>
+    <h1>Firebase Connection Test</h1>
 
-<h2>Firebase Connection Test</h2>
-<p id="result">Testing...</p>
+    <p id="status">Testing Firebase...</p>
 
-<script type="module">
-import { db } from "./firebase.js";
+    <script type="module">
+        import { initializeApp } 
+            from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-import {
-    collection,
-    getDocs,
-    getDoc,
-    doc
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } 
+            from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const result = document.getElementById("result");
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCNRCrJMLE5rMk7ibraToPYCFVipCTn_k",
+            authDomain: "mwitari-s-heritage-9f4ff.firebaseapp.com",
+            projectId: "mwitari-s-heritage-9f4ff",
+            storageBucket: "mwitari-s-heritage-9f4ff.firebasestorage.app",
+            messagingSenderId: "314644112716",
+            appId: "1:314644112716:web:405b8d26dc52730f0bdbe9",
+            measurementId: "G-W39T3JZF34"
+        };
 
-try {
-    const test = await getDoc(
-        doc(db, "members", "II2LfPfbC8UT7ezGPsDejA2awHE3")
-    );
+        try {
+            const app = initializeApp(firebaseConfig);
 
-    if (test.exists()) {
-        result.innerHTML =
-            "SUCCESS — Firestore can read the member document.";
-    } else {
-        result.innerHTML =
-            "CONNECTED — but that document does not exist.";
-    }
+            const db = getFirestore(app);
 
-} catch (error) {
-    result.innerHTML =
-        "ERROR: " + error.code + "<br>" + error.message;
-}
-</script>
+            document.getElementById("status").innerHTML =
+                "✅ Firebase initialized successfully.<br>Testing Firestore...";
+
+            const testRef = doc(db, "connectionTest", "test");
+
+            await setDoc(testRef, {
+                message: "Mwitari's Heritage connection test",
+                time: new Date().toISOString()
+            });
+
+            const testSnapshot = await getDoc(testRef);
+
+            if (testSnapshot.exists()) {
+                document.getElementById("status").innerHTML =
+                    "🎉 SUCCESS! Firebase and Firestore are connected.<br>" +
+                    "Project: mwitari-s-heritage-9f4ff";
+            } else {
+                document.getElementById("status").innerHTML =
+                    "⚠️ Firebase connected, but the test document could not be read.";
+            }
+
+        } catch (error) {
+
+            document.getElementById("status").innerHTML =
+                "❌ CONNECTION FAILED<br><br>" +
+                "Error code: " + error.code + "<br>" +
+                "Message: " + error.message;
+            
+            console.error(error);
+        }
+    </script>
 
 </body>
 </html>
