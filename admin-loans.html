@@ -24,9 +24,7 @@
         Checking administrator access...
     </p>
 
-    <div id="applications">
-
-    </div>
+    <div id="applications"></div>
 
     <br>
 
@@ -63,7 +61,7 @@ const applications =
 
 
 // ==========================================
-// CHECK ADMIN LOGIN
+// CHECK ADMINISTRATOR
 // ==========================================
 
 onAuthStateChanged(auth, async (user) => {
@@ -125,7 +123,7 @@ onAuthStateChanged(auth, async (user) => {
 
 
 // ==========================================
-// LOAD LOAN APPLICATIONS
+// LOAD APPLICATIONS
 // ==========================================
 
 async function loadApplications() {
@@ -149,7 +147,7 @@ async function loadApplications() {
             applications.innerHTML = `
 
                 <p>
-                    No loan applications have been submitted yet.
+                    No loan applications found.
                 </p>
 
             `;
@@ -170,6 +168,27 @@ async function loadApplications() {
                 applicationDoc.id;
 
 
+            const approvedAmount =
+                Number(
+                    application.approvedAmount ||
+                    application.loanAmount ||
+                    0
+                );
+
+
+            const loanPaid =
+                Number(
+                    application.loanPaid || 0
+                );
+
+
+            const loanBalance =
+                Math.max(
+                    approvedAmount - loanPaid,
+                    0
+                );
+
+
             html += `
 
                 <div
@@ -183,7 +202,8 @@ async function loadApplications() {
 
                     <h2>
                         ${escapeHTML(
-                            application.memberName || "Unknown Member"
+                            application.memberName ||
+                            "Unknown Member"
                         )}
                     </h2>
 
@@ -195,7 +215,8 @@ async function loadApplications() {
                         </strong>
 
                         ${escapeHTML(
-                            application.memberNumber || ""
+                            application.memberNumber ||
+                            ""
                         )}
 
                     </p>
@@ -204,7 +225,7 @@ async function loadApplications() {
                     <p>
 
                         <strong>
-                            Loan Requested:
+                            Requested Loan:
                         </strong>
 
                         KSh
@@ -248,10 +269,90 @@ async function loadApplications() {
                         </strong>
 
                         ${escapeHTML(
-                            application.status || "pending"
+                            application.status ||
+                            "pending"
                         )}
 
                     </p>
+
+
+                    <hr>
+
+
+                    <h3>
+                        Loan Financial Details
+                    </h3>
+
+
+                    <label>
+                        Approved Loan Amount
+                    </label>
+
+                    <input
+                        type="number"
+                        id="approved-${applicationId}"
+                        value="${approvedAmount}"
+                        min="0"
+                        step="1"
+                    >
+
+
+                    <br><br>
+
+
+                    <label>
+                        Amount Paid
+                    </label>
+
+                    <input
+                        type="number"
+                        id="paid-${applicationId}"
+                        value="${loanPaid}"
+                        min="0"
+                        step="1"
+                        oninput="calculateBalance('${applicationId}')"
+                    >
+
+
+                    <br><br>
+
+
+                    <p>
+
+                        <strong>
+                            Outstanding Balance:
+                        </strong>
+
+                        <span
+                            id="balance-${applicationId}"
+                        >
+                            KSh ${loanBalance.toLocaleString()}
+                        </span>
+
+                    </p>
+
+
+                    <br>
+
+
+                    <textarea
+                        id="comment-${applicationId}"
+                        placeholder="Administrator comment"
+                        rows="3"
+                        style="width:100%;"
+                    >${escapeHTML(
+                        application.adminComment || ""
+                    )}</textarea>
+
+
+                    <br><br>
+
+
+                    <button
+                        onclick="saveLoan('${applicationId}')"
+                    >
+                        💾 Save Loan Information
+                    </button>
 
 
                     ${
@@ -260,46 +361,7 @@ async function loadApplications() {
 
                         `
 
-                        <hr>
-
-                        <h3>
-                            Administrator Decision
-                        </h3>
-
-
-                        <input
-                            type="number"
-                            id="paid-${applicationId}"
-                            placeholder="Amount already paid"
-                            min="0"
-                            value="0"
-                        >
-
-
                         <br><br>
-
-
-                        <input
-                            type="number"
-                            id="approved-${applicationId}"
-                            placeholder="Approved Loan Amount"
-                            min="0"
-                        >
-
-
-                        <br><br>
-
-
-                        <textarea
-                            id="comment-${applicationId}"
-                            placeholder="Administrator comment or reason"
-                            rows="4"
-                            style="width: 100%;"
-                        ></textarea>
-
-
-                        <br><br>
-
 
                         <button
                             onclick="approveLoan('${applicationId}')"
@@ -318,30 +380,8 @@ async function loadApplications() {
 
                         :
 
-                        `
+                        ""
 
-                        <p>
-                            <strong>
-                                Administrator Decision:
-                            </strong>
-
-                            ${escapeHTML(
-                                application.adminDecision || ""
-                            )}
-                        </p>
-
-
-                        <p>
-                            <strong>
-                                Administrator Comment:
-                            </strong>
-
-                            ${escapeHTML(
-                                application.adminComment || ""
-                            )}
-                        </p>
-
-                        `
                     }
 
                 </div>
@@ -358,9 +398,10 @@ async function loadApplications() {
     } catch (error) {
 
         console.error(
-            "Application loading error:",
+            "Loading applications error:",
             error
         );
+
 
         applications.innerHTML = `
 
@@ -377,6 +418,218 @@ async function loadApplications() {
     }
 
 }
+
+
+// ==========================================
+// CALCULATE BALANCE ON SCREEN
+// ==========================================
+
+window.calculateBalance =
+    function(applicationId) {
+
+        const approved =
+            Number(
+                document.getElementById(
+                    "approved-" + applicationId
+                ).value
+            ) || 0;
+
+
+        const paid =
+            Number(
+                document.getElementById(
+                    "paid-" + applicationId
+                ).value
+            ) || 0;
+
+
+        const balance =
+            Math.max(
+                approved - paid,
+                0
+            );
+
+
+        document.getElementById(
+            "balance-" + applicationId
+        ).textContent =
+            "KSh " +
+            balance.toLocaleString();
+
+    };
+
+
+// ==========================================
+// SAVE LOAN INFORMATION
+// ==========================================
+
+window.saveLoan =
+    async function(applicationId) {
+
+        try {
+
+            const applicationRef =
+                doc(
+                    db,
+                    "loanApplications",
+                    applicationId
+                );
+
+
+            const applicationSnap =
+                await getDoc(applicationRef);
+
+
+            if (!applicationSnap.exists()) {
+
+                alert(
+                    "Loan application not found."
+                );
+
+                return;
+            }
+
+
+            const application =
+                applicationSnap.data();
+
+
+            const approvedAmount =
+                Number(
+                    document.getElementById(
+                        "approved-" + applicationId
+                    ).value
+                );
+
+
+            const loanPaid =
+                Number(
+                    document.getElementById(
+                        "paid-" + applicationId
+                    ).value
+                );
+
+
+            const comment =
+                document.getElementById(
+                    "comment-" + applicationId
+                ).value.trim();
+
+
+            if (approvedAmount < 0) {
+
+                alert(
+                    "Approved loan amount cannot be negative."
+                );
+
+                return;
+            }
+
+
+            if (loanPaid < 0) {
+
+                alert(
+                    "Amount paid cannot be negative."
+                );
+
+                return;
+            }
+
+
+            if (loanPaid > approvedAmount) {
+
+                alert(
+                    "Amount paid cannot be greater than the approved loan."
+                );
+
+                return;
+            }
+
+
+            const loanBalance =
+                approvedAmount - loanPaid;
+
+
+            // ----------------------------------
+            // UPDATE APPLICATION
+            // ----------------------------------
+
+            await updateDoc(
+                applicationRef,
+                {
+
+                    approvedAmount:
+                        approvedAmount,
+
+                    loanPaid:
+                        loanPaid,
+
+                    loanBalance:
+                        loanBalance,
+
+                    adminComment:
+                        comment,
+
+                    updatedAt:
+                        serverTimestamp()
+
+                }
+            );
+
+
+            // ----------------------------------
+            // UPDATE MEMBER ACCOUNT
+            // ----------------------------------
+
+            const memberRef =
+                doc(
+                    db,
+                    "members",
+                    application.userId
+                );
+
+
+            await updateDoc(
+                memberRef,
+                {
+
+                    loanAmount:
+                        approvedAmount,
+
+                    loanPaid:
+                        loanPaid,
+
+                    loanBalance:
+                        loanBalance
+
+                }
+            );
+
+
+            alert(
+                "✅ Loan information saved successfully."
+            );
+
+
+            await loadApplications();
+
+
+        } catch (error) {
+
+            console.error(
+                "Save loan error:",
+                error
+            );
+
+
+            alert(
+                "Unable to save loan information: " +
+                error.message
+            );
+
+        }
+
+    };
 
 
 // ==========================================
@@ -403,7 +656,7 @@ window.approveLoan =
             if (!applicationSnap.exists()) {
 
                 alert(
-                    "Loan application no longer exists."
+                    "Loan application not found."
                 );
 
                 return;
@@ -412,16 +665,6 @@ window.approveLoan =
 
             const application =
                 applicationSnap.data();
-
-
-            if (application.status !== "pending") {
-
-                alert(
-                    "This application has already been reviewed."
-                );
-
-                return;
-            }
 
 
             const approvedAmount =
@@ -456,10 +699,10 @@ window.approveLoan =
             }
 
 
-            if (loanPaid < 0) {
+            if (loanPaid > approvedAmount) {
 
                 alert(
-                    "The amount paid cannot be negative."
+                    "Amount paid cannot exceed the loan amount."
                 );
 
                 return;
@@ -467,13 +710,10 @@ window.approveLoan =
 
 
             const loanBalance =
-                Math.max(
-                    approvedAmount - loanPaid,
-                    0
-                );
+                approvedAmount - loanPaid;
 
 
-            // Update the member's financial record
+            // Update member
             const memberRef =
                 doc(
                     db,
@@ -499,7 +739,7 @@ window.approveLoan =
             );
 
 
-            // Update the application
+            // Update application
             await updateDoc(
                 applicationRef,
                 {
@@ -509,6 +749,15 @@ window.approveLoan =
 
                     adminDecision:
                         "approved",
+
+                    approvedAmount:
+                        approvedAmount,
+
+                    loanPaid:
+                        loanPaid,
+
+                    loanBalance:
+                        loanBalance,
 
                     adminComment:
                         comment,
@@ -521,16 +770,17 @@ window.approveLoan =
 
 
             alert(
-                "Loan approved and member's loan record updated."
+                "✅ Loan approved successfully."
             );
 
 
             await loadApplications();
 
+
         } catch (error) {
 
             console.error(
-                "Loan approval error:",
+                "Approval error:",
                 error
             );
 
@@ -546,7 +796,7 @@ window.approveLoan =
 
 
 // ==========================================
-// REJECT LOAN
+// REJECT APPLICATION
 // ==========================================
 
 window.rejectLoan =
@@ -578,34 +828,6 @@ window.rejectLoan =
                 );
 
 
-            const applicationSnap =
-                await getDoc(applicationRef);
-
-
-            if (!applicationSnap.exists()) {
-
-                alert(
-                    "Loan application no longer exists."
-                );
-
-                return;
-            }
-
-
-            const application =
-                applicationSnap.data();
-
-
-            if (application.status !== "pending") {
-
-                alert(
-                    "This application has already been reviewed."
-                );
-
-                return;
-            }
-
-
             await updateDoc(
                 applicationRef,
                 {
@@ -627,7 +849,7 @@ window.rejectLoan =
 
 
             alert(
-                "The application has been marked as not eligible."
+                "Application marked as not eligible."
             );
 
 
@@ -637,13 +859,13 @@ window.rejectLoan =
         } catch (error) {
 
             console.error(
-                "Loan rejection error:",
+                "Rejection error:",
                 error
             );
 
 
             alert(
-                "Unable to reject loan: " +
+                "Unable to reject application: " +
                 error.message
             );
 
@@ -653,7 +875,7 @@ window.rejectLoan =
 
 
 // ==========================================
-// SECURITY: ESCAPE DISPLAYED TEXT
+// ESCAPE HTML
 // ==========================================
 
 function escapeHTML(value) {
