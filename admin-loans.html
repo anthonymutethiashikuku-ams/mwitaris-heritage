@@ -1,53 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Loans | Mwitari's Heritage</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Loan Management - Mwitari's Heritage</title>
+
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
 
-<div class="admin-container">
+<div class="login-container">
 
-    <h1>Admin Loan Management</h1>
-    <p>Manage members' loans and payments.</p>
+    <h1>💰 Loan Management</h1>
 
-    <button onclick="window.location.href='admin-dashboard.html'">
-        ← Back to Admin Dashboard
-    </button>
+    <p id="loadingMessage">
+        Checking administrator access...
+    </p>
 
-    <hr>
-
-    <label for="memberSelect">Select Member</label>
-    <select id="memberSelect">
-        <option value="">-- Select Member --</option>
-    </select>
-
-    <div id="loanSection" style="display:none;">
-
-        <h2>Loan Information</h2>
-
-        <p><strong>Member:</strong> <span id="memberName"></span></p>
-        <p><strong>Member Number:</strong> <span id="memberNumber"></span></p>
-
-        <label>Loan Amount (KSh)</label>
-        <input type="number" id="loanAmount" min="0">
-
-        <label>Amount Paid (KSh)</label>
-        <input type="number" id="loanPaid" min="0">
-
-        <label>Remaining Balance (KSh)</label>
-        <input type="number" id="loanBalance" readonly>
-
-        <button id="saveLoan">Save Loan Changes</button>
-
-        <p id="loanMessage"></p>
+    <div id="applications">
 
     </div>
 
+    <br>
+
+    <button onclick="location.href='admin-dashboard.html'">
+        ← Admin Dashboard
+    </button>
+
 </div>
+
 
 <script type="module">
 
@@ -62,177 +50,625 @@ import {
     getDocs,
     doc,
     getDoc,
-    updateDoc
+    updateDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-const memberSelect = document.getElementById("memberSelect");
 
-const loanSection = document.getElementById("loanSection");
+const loadingMessage =
+    document.getElementById("loadingMessage");
 
-const memberName = document.getElementById("memberName");
-const memberNumber = document.getElementById("memberNumber");
+const applications =
+    document.getElementById("applications");
 
-const loanAmount = document.getElementById("loanAmount");
-const loanPaid = document.getElementById("loanPaid");
-const loanBalance = document.getElementById("loanBalance");
 
-const saveLoan = document.getElementById("saveLoan");
-const loanMessage = document.getElementById("loanMessage");
-
-let members = {};
-
-/* Check administrator */
+// ==========================================
+// CHECK ADMIN LOGIN
+// ==========================================
 
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-        window.location.href = "admin-login.html";
+
+        window.location.href =
+            "admin-login.html";
+
         return;
     }
 
-    const adminRef = doc(db, "members", user.uid);
-    const adminSnap = await getDoc(adminRef);
-
-    if (!adminSnap.exists() || adminSnap.data().role !== "admin") {
-
-        alert("Access denied. Administrator privileges required.");
-        window.location.href = "dashboard.html";
-        return;
-    }
-
-    loadMembers();
-});
-
-
-/* Load members */
-
-async function loadMembers() {
 
     try {
 
-        const snapshot = await getDocs(collection(db, "members"));
+        const adminRef =
+            doc(db, "members", user.uid);
 
-        snapshot.forEach((memberDoc) => {
+        const adminSnap =
+            await getDoc(adminRef);
 
-            const data = memberDoc.data();
 
-            members[memberDoc.id] = data;
+        if (
+            !adminSnap.exists() ||
+            adminSnap.data().role !== "admin"
+        ) {
 
-            const option = document.createElement("option");
+            alert(
+                "Administrator access required."
+            );
 
-            option.value = memberDoc.id;
+            window.location.href =
+                "dashboard.html";
 
-            option.textContent =
-                `${data.fullName || "Unnamed Member"} - ${data.memberNumber || memberDoc.id}`;
+            return;
+        }
 
-            memberSelect.appendChild(option);
 
-        });
+        loadingMessage.textContent =
+            "Loading loan applications...";
+
+
+        await loadApplications();
+
 
     } catch (error) {
 
-        console.error(error);
-        alert("Unable to load members.");
+        console.error(
+            "Admin verification error:",
+            error
+        );
+
+        loadingMessage.textContent =
+            "Unable to verify administrator.";
 
     }
-}
-
-
-/* Select member */
-
-memberSelect.addEventListener("change", () => {
-
-    const uid = memberSelect.value;
-
-    if (!uid) {
-
-        loanSection.style.display = "none";
-        return;
-
-    }
-
-    const data = members[uid];
-
-    loanSection.style.display = "block";
-
-    memberName.textContent = data.fullName || "N/A";
-
-    memberNumber.textContent = data.memberNumber || "N/A";
-
-    loanAmount.value = data.loanAmount || 0;
-
-    loanPaid.value = data.loanPaid || 0;
-
-    calculateBalance();
 
 });
 
 
-/* Calculate balance */
+// ==========================================
+// LOAD LOAN APPLICATIONS
+// ==========================================
 
-loanAmount.addEventListener("input", calculateBalance);
-loanPaid.addEventListener("input", calculateBalance);
-
-function calculateBalance() {
-
-    const amount = Number(loanAmount.value) || 0;
-    const paid = Number(loanPaid.value) || 0;
-
-    loanBalance.value = Math.max(amount - paid, 0);
-
-}
-
-
-/* Save changes */
-
-saveLoan.addEventListener("click", async () => {
-
-    const uid = memberSelect.value;
-
-    if (!uid) {
-        alert("Please select a member.");
-        return;
-    }
-
-    const amount = Number(loanAmount.value) || 0;
-    const paid = Number(loanPaid.value) || 0;
-
-    if (paid > amount) {
-
-        alert("Amount paid cannot be greater than the loan amount.");
-        return;
-
-    }
+async function loadApplications() {
 
     try {
 
-        await updateDoc(doc(db, "members", uid), {
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    "loanApplications"
+                )
+            );
 
-            loanAmount: amount,
-            loanPaid: paid,
-            loanBalance: amount - paid
+
+        loadingMessage.textContent = "";
+
+
+        if (snapshot.empty) {
+
+            applications.innerHTML = `
+
+                <p>
+                    No loan applications have been submitted yet.
+                </p>
+
+            `;
+
+            return;
+        }
+
+
+        let html = "";
+
+
+        snapshot.forEach((applicationDoc) => {
+
+            const application =
+                applicationDoc.data();
+
+            const applicationId =
+                applicationDoc.id;
+
+
+            html += `
+
+                <div
+                    style="
+                        border: 1px solid #ccc;
+                        padding: 15px;
+                        margin-bottom: 20px;
+                        border-radius: 8px;
+                    "
+                >
+
+                    <h2>
+                        ${escapeHTML(
+                            application.memberName || "Unknown Member"
+                        )}
+                    </h2>
+
+
+                    <p>
+
+                        <strong>
+                            Membership Number:
+                        </strong>
+
+                        ${escapeHTML(
+                            application.memberNumber || ""
+                        )}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Loan Requested:
+                        </strong>
+
+                        KSh
+                        ${Number(
+                            application.loanAmount || 0
+                        ).toLocaleString()}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Purpose:
+                        </strong>
+
+                        ${escapeHTML(
+                            application.purpose || ""
+                        )}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Repayment Period:
+                        </strong>
+
+                        ${escapeHTML(
+                            application.repaymentPeriod || ""
+                        )}
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Status:
+                        </strong>
+
+                        ${escapeHTML(
+                            application.status || "pending"
+                        )}
+
+                    </p>
+
+
+                    ${
+                        application.status === "pending"
+                        ?
+
+                        `
+
+                        <hr>
+
+                        <h3>
+                            Administrator Decision
+                        </h3>
+
+
+                        <input
+                            type="number"
+                            id="paid-${applicationId}"
+                            placeholder="Amount already paid"
+                            min="0"
+                            value="0"
+                        >
+
+
+                        <br><br>
+
+
+                        <input
+                            type="number"
+                            id="approved-${applicationId}"
+                            placeholder="Approved Loan Amount"
+                            min="0"
+                        >
+
+
+                        <br><br>
+
+
+                        <textarea
+                            id="comment-${applicationId}"
+                            placeholder="Administrator comment or reason"
+                            rows="4"
+                            style="width: 100%;"
+                        ></textarea>
+
+
+                        <br><br>
+
+
+                        <button
+                            onclick="approveLoan('${applicationId}')"
+                        >
+                            ✅ Approve Loan
+                        </button>
+
+
+                        <button
+                            onclick="rejectLoan('${applicationId}')"
+                        >
+                            ❌ Declare Not Eligible
+                        </button>
+
+                        `
+
+                        :
+
+                        `
+
+                        <p>
+                            <strong>
+                                Administrator Decision:
+                            </strong>
+
+                            ${escapeHTML(
+                                application.adminDecision || ""
+                            )}
+                        </p>
+
+
+                        <p>
+                            <strong>
+                                Administrator Comment:
+                            </strong>
+
+                            ${escapeHTML(
+                                application.adminComment || ""
+                            )}
+                        </p>
+
+                        `
+                    }
+
+                </div>
+
+            `;
 
         });
 
-        members[uid].loanAmount = amount;
-        members[uid].loanPaid = paid;
-        members[uid].loanBalance = amount - paid;
 
-        loanMessage.textContent =
-            "Loan information updated successfully.";
+        applications.innerHTML =
+            html;
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Application loading error:",
+            error
+        );
 
-        loanMessage.textContent =
-            "Failed to update loan information.";
+        applications.innerHTML = `
+
+            <p>
+                ❌ Unable to load loan applications.
+            </p>
+
+            <p>
+                ${escapeHTML(error.message)}
+            </p>
+
+        `;
 
     }
 
-});
+}
+
+
+// ==========================================
+// APPROVE LOAN
+// ==========================================
+
+window.approveLoan =
+    async function(applicationId) {
+
+        try {
+
+            const applicationRef =
+                doc(
+                    db,
+                    "loanApplications",
+                    applicationId
+                );
+
+
+            const applicationSnap =
+                await getDoc(applicationRef);
+
+
+            if (!applicationSnap.exists()) {
+
+                alert(
+                    "Loan application no longer exists."
+                );
+
+                return;
+            }
+
+
+            const application =
+                applicationSnap.data();
+
+
+            if (application.status !== "pending") {
+
+                alert(
+                    "This application has already been reviewed."
+                );
+
+                return;
+            }
+
+
+            const approvedAmount =
+                Number(
+                    document.getElementById(
+                        "approved-" + applicationId
+                    ).value
+                );
+
+
+            const loanPaid =
+                Number(
+                    document.getElementById(
+                        "paid-" + applicationId
+                    ).value
+                );
+
+
+            const comment =
+                document.getElementById(
+                    "comment-" + applicationId
+                ).value.trim();
+
+
+            if (approvedAmount <= 0) {
+
+                alert(
+                    "Enter the approved loan amount."
+                );
+
+                return;
+            }
+
+
+            if (loanPaid < 0) {
+
+                alert(
+                    "The amount paid cannot be negative."
+                );
+
+                return;
+            }
+
+
+            const loanBalance =
+                Math.max(
+                    approvedAmount - loanPaid,
+                    0
+                );
+
+
+            // Update the member's financial record
+            const memberRef =
+                doc(
+                    db,
+                    "members",
+                    application.userId
+                );
+
+
+            await updateDoc(
+                memberRef,
+                {
+
+                    loanAmount:
+                        approvedAmount,
+
+                    loanPaid:
+                        loanPaid,
+
+                    loanBalance:
+                        loanBalance
+
+                }
+            );
+
+
+            // Update the application
+            await updateDoc(
+                applicationRef,
+                {
+
+                    status:
+                        "approved",
+
+                    adminDecision:
+                        "approved",
+
+                    adminComment:
+                        comment,
+
+                    reviewedAt:
+                        serverTimestamp()
+
+                }
+            );
+
+
+            alert(
+                "Loan approved and member's loan record updated."
+            );
+
+
+            await loadApplications();
+
+        } catch (error) {
+
+            console.error(
+                "Loan approval error:",
+                error
+            );
+
+
+            alert(
+                "Unable to approve loan: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// REJECT LOAN
+// ==========================================
+
+window.rejectLoan =
+    async function(applicationId) {
+
+        try {
+
+            const comment =
+                document.getElementById(
+                    "comment-" + applicationId
+                ).value.trim();
+
+
+            if (!comment) {
+
+                alert(
+                    "Please enter the reason why the member is not eligible."
+                );
+
+                return;
+            }
+
+
+            const applicationRef =
+                doc(
+                    db,
+                    "loanApplications",
+                    applicationId
+                );
+
+
+            const applicationSnap =
+                await getDoc(applicationRef);
+
+
+            if (!applicationSnap.exists()) {
+
+                alert(
+                    "Loan application no longer exists."
+                );
+
+                return;
+            }
+
+
+            const application =
+                applicationSnap.data();
+
+
+            if (application.status !== "pending") {
+
+                alert(
+                    "This application has already been reviewed."
+                );
+
+                return;
+            }
+
+
+            await updateDoc(
+                applicationRef,
+                {
+
+                    status:
+                        "rejected",
+
+                    adminDecision:
+                        "not eligible",
+
+                    adminComment:
+                        comment,
+
+                    reviewedAt:
+                        serverTimestamp()
+
+                }
+            );
+
+
+            alert(
+                "The application has been marked as not eligible."
+            );
+
+
+            await loadApplications();
+
+
+        } catch (error) {
+
+            console.error(
+                "Loan rejection error:",
+                error
+            );
+
+
+            alert(
+                "Unable to reject loan: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// SECURITY: ESCAPE DISPLAYED TEXT
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
 
 </script>
 
 </body>
-  </html>
+
+    </html>
