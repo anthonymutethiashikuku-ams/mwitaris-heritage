@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "mwitari-s-heritage",
+    "site": "mwitari-s-heritage-9f4ff",
     "public": ".",
     "ignore": [
       "firebase.json",
