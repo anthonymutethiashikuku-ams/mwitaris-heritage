@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Bylaws - Mwitari's Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>📜 Manage Bylaws</h1>
+
+    <p id="loadingMessage">
+        Checking administrator access...
+    </p>
+
+
+    <!-- ======================================
+         ADD NEW BYLAW
+    ======================================= -->
+
+    <div id="adminContent" style="display:none;">
+
+        <h2>Add New Bylaw</h2>
+
+        <form id="bylawForm">
+
+            <input
+                type="text"
+                id="bylawTitle"
+                placeholder="Bylaw Title"
+                required
+            >
+
+            <textarea
+                id="bylawContent"
+                placeholder="Enter the bylaw..."
+                rows="8"
+                required
+                style="width:100%;"
+            ></textarea>
+
+            <input
+                type="number"
+                id="bylawOrder"
+                placeholder="Order (e.g. 1, 2, 3...)"
+                min="1"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                ➕ Add Bylaw
+            </button>
+
+        </form>
+
+
+        <p id="message"></p>
+
+
+        <hr>
+
+
+        <!-- ======================================
+             EXISTING BYLAWS
+        ======================================= -->
+
+        <h2>Existing Bylaws</h2>
+
+        <div id="bylawsList">
+            Loading bylaws...
+        </div>
+
+
+        <br>
+
+
+        <button onclick="location.href='admin-dashboard.html'">
+            ← Admin Dashboard
+        </button>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+import {
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+const adminContent =
+    document.getElementById("adminContent");
+
+const bylawForm =
+    document.getElementById("bylawForm");
+
+const message =
+    document.getElementById("message");
+
+const bylawsList =
+    document.getElementById("bylawsList");
+
+
+// ==========================================
+// CHECK ADMIN LOGIN
+// ==========================================
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href =
+            "admin-login.html";
+
+        return;
+    }
+
+
+    try {
+
+        const adminRef =
+            doc(db, "members", user.uid);
+
+        const adminSnap =
+            await getDoc(adminRef);
+
+
+        if (
+            !adminSnap.exists() ||
+            adminSnap.data().role !== "admin"
+        ) {
+
+            alert(
+                "Administrator access required."
+            );
+
+            window.location.href =
+                "dashboard.html";
+
+            return;
+        }
+
+
+        loadingMessage.textContent = "";
+
+        adminContent.style.display =
+            "block";
+
+
+        await loadBylaws();
+
+
+    } catch (error) {
+
+        console.error(
+            "Administrator verification error:",
+            error
+        );
+
+
+        loadingMessage.textContent =
+            "Unable to verify administrator.";
+
+    }
+
+});
+
+
+// ==========================================
+// ADD BYLAW
+// ==========================================
+
+bylawForm.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        const title =
+            document
+                .getElementById("bylawTitle")
+                .value
+                .trim();
+
+
+        const content =
+            document
+                .getElementById("bylawContent")
+                .value
+                .trim();
+
+
+        const order =
+            Number(
+                document
+                    .getElementById("bylawOrder")
+                    .value
+            );
+
+
+        if (!title || !content || order < 1) {
+
+            message.textContent =
+                "Please provide all bylaw information.";
+
+            return;
+        }
+
+
+        message.textContent =
+            "Adding bylaw...";
+
+
+        try {
+
+            await addDoc(
+                collection(db, "bylaws"),
+                {
+
+                    title:
+                        title,
+
+                    content:
+                        content,
+
+                    order:
+                        order
+
+                }
+            );
+
+
+            message.textContent =
+                "✅ Bylaw added successfully.";
+
+
+            bylawForm.reset();
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+            console.error(
+                "Add bylaw error:",
+                error
+            );
+
+
+            message.textContent =
+                "❌ Unable to add bylaw: " +
+                error.message;
+
+        }
+
+    }
+);
+
+
+// ==========================================
+// LOAD EXISTING BYLAWS
+// ==========================================
+
+async function loadBylaws() {
+
+    try {
+
+        const bylawsQuery =
+            query(
+                collection(db, "bylaws"),
+                orderBy("order")
+            );
+
+
+        const snapshot =
+            await getDocs(bylawsQuery);
+
+
+        if (snapshot.empty) {
+
+            bylawsList.innerHTML = `
+
+                <p>
+                    No bylaws have been added yet.
+                </p>
+
+            `;
+
+            return;
+        }
+
+
+        let html = "";
+
+
+        snapshot.forEach((bylawDoc) => {
+
+            const bylaw =
+                bylawDoc.data();
+
+
+            html += `
+
+                <div
+                    style="
+                        border: 1px solid #ccc;
+                        padding: 15px;
+                        margin-bottom: 20px;
+                        border-radius: 8px;
+                    "
+                >
+
+                    <h3>
+                        ${escapeHTML(
+                            bylaw.title || ""
+                        )}
+                    </h3>
+
+
+                    <p style="white-space: pre-line;">
+                        ${escapeHTML(
+                            bylaw.content || ""
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>
+                            Order:
+                        </strong>
+
+                        ${Number(
+                            bylaw.order || 0
+                        )}
+                    </p>
+
+
+                    <button
+                        onclick="editBylaw('${bylawDoc.id}')"
+                    >
+                        ✏️ Edit
+                    </button>
+
+
+                    <button
+                        onclick="deleteBylaw('${bylawDoc.id}')"
+                    >
+                        🗑️ Delete
+                    </button>
+
+                </div>
+
+            `;
+
+        });
+
+
+        bylawsList.innerHTML =
+            html;
+
+
+    } catch (error) {
+
+        console.error(
+            "Loading bylaws error:",
+            error
+        );
+
+
+        bylawsList.innerHTML = `
+
+            <p>
+                ❌ Unable to load bylaws.
+            </p>
+
+            <p>
+                ${escapeHTML(error.message)}
+            </p>
+
+        `;
+
+    }
+
+}
+
+
+// ==========================================
+// EDIT BYLAW
+// ==========================================
+
+window.editBylaw =
+    async function(bylawId) {
+
+        try {
+
+            const bylawRef =
+                doc(
+                    db,
+                    "bylaws",
+                    bylawId
+                );
+
+
+            const bylawSnap =
+                await getDoc(bylawRef);
+
+
+            if (!bylawSnap.exists()) {
+
+                alert(
+                    "Bylaw no longer exists."
+                );
+
+                return;
+            }
+
+
+            const bylaw =
+                bylawSnap.data();
+
+
+            const newTitle =
+                prompt(
+                    "Enter the new bylaw title:",
+                    bylaw.title || ""
+                );
+
+
+            if (newTitle === null) {
+                return;
+            }
+
+
+            const newContent =
+                prompt(
+                    "Enter the new bylaw content:",
+                    bylaw.content || ""
+                );
+
+
+            if (newContent === null) {
+                return;
+            }
+
+
+            const newOrder =
+                prompt(
+                    "Enter the display order:",
+                    bylaw.order || 1
+                );
+
+
+            if (newOrder === null) {
+                return;
+            }
+
+
+            const order =
+                Number(newOrder);
+
+
+            if (
+                !newTitle.trim() ||
+                !newContent.trim() ||
+                order < 1
+            ) {
+
+                alert(
+                    "Please enter valid bylaw information."
+                );
+
+                return;
+            }
+
+
+            await updateDoc(
+                bylawRef,
+                {
+
+                    title:
+                        newTitle.trim(),
+
+                    content:
+                        newContent.trim(),
+
+                    order:
+                        order
+
+                }
+            );
+
+
+            alert(
+                "Bylaw updated successfully."
+            );
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+            console.error(
+                "Edit bylaw error:",
+                error
+            );
+
+
+            alert(
+                "Unable to update bylaw: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// DELETE BYLAW
+// ==========================================
+
+window.deleteBylaw =
+    async function(bylawId) {
+
+        const confirmed =
+            confirm(
+                "Are you sure you want to delete this bylaw?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "bylaws",
+                    bylawId
+                )
+            );
+
+
+            alert(
+                "Bylaw deleted successfully."
+            );
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+            console.error(
+                "Delete bylaw error:",
+                error
+            );
+
+
+            alert(
+                "Unable to delete bylaw: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// SECURITY: ESCAPE HTML
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+</script>
+
+</body>
+
+</html>
