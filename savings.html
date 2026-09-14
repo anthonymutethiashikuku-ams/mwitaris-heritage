@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Savings</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Savings - Mwitari's Heritage</title>
 
     <link rel="stylesheet" href="style.css">
 
@@ -18,13 +20,143 @@
 
     <h1>💵 Savings</h1>
 
-    <p>Your savings information will appear here.</p>
+    <p id="loadingMessage">
+        Loading your savings information...
+    </p>
+
+    <div id="savingsDetails"></div>
+
+    <br>
 
     <button onclick="location.href='dashboard.html'">
-        Back to Dashboard
+        🏠 Back to Dashboard
     </button>
 
 </div>
 
+
+<script type="module">
+
+import { auth, db } from "./firebase.js";
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+const savingsDetails =
+    document.getElementById("savingsDetails");
+
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href =
+            "index.html";
+
+        return;
+    }
+
+
+    try {
+
+        const memberRef =
+            doc(db, "members", user.uid);
+
+        const memberSnap =
+            await getDoc(memberRef);
+
+
+        if (!memberSnap.exists()) {
+
+            loadingMessage.textContent =
+                "Member information could not be found.";
+
+            return;
+        }
+
+
+        const member =
+            memberSnap.data();
+
+
+        const savingsBalance =
+            Number(member.savingsBalance || 0);
+
+
+        loadingMessage.textContent = "";
+
+
+        savingsDetails.innerHTML = `
+
+            <h2>My Savings</h2>
+
+            <p>
+                <strong>Member Name:</strong>
+                ${escapeHTML(member.fullName || "Not provided")}
+            </p>
+
+            <p>
+                <strong>Membership Number:</strong>
+                ${escapeHTML(member.memberNumber || "Not provided")}
+            </p>
+
+            <hr>
+
+            <h3>Savings Balance</h3>
+
+            <p>
+                <strong>
+                    KSh ${savingsBalance.toLocaleString()}
+                </strong>
+            </p>
+
+        `;
+
+
+    } catch (error) {
+
+        console.error(
+            "Savings loading error:",
+            error
+        );
+
+        loadingMessage.textContent =
+            "Unable to load your savings information.";
+
+        savingsDetails.innerHTML = `
+            <p>
+                ${escapeHTML(error.message)}
+            </p>
+        `;
+
+    }
+
+});
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+</script>
+
 </body>
-</html>
+
+    </html>
