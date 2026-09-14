@@ -26,7 +26,7 @@ jobs:
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-service-account.json
 
       - name: Deploy to Firebase
-        run: firebase deploy --only hosting --project mwitari-s-heritage
+        run: firebase deploy --only hosting --project mwitari-s-heritage-9f4ff
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ./firebase-service-account.json
 # Firebase deployment workflow
