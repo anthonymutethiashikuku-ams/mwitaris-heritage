@@ -20,14 +20,17 @@
 
     <h1>📝 Loan Application</h1>
 
-    <p>Please enter your loan details.</p>
+    <p id="loadingMessage">
+        Loading your member information...
+    </p>
 
-    <form onsubmit="submitLoan(event)">
+    <form id="loanForm">
 
         <input
             type="text"
             id="memberName"
             placeholder="Full Name"
+            readonly
             required
         >
 
@@ -35,6 +38,7 @@
             type="text"
             id="memberNumber"
             placeholder="Membership Number"
+            readonly
             required
         >
 
@@ -58,31 +62,53 @@
             <option value="">
                 Select Repayment Period
             </option>
-          <option value="1 month">
-            1 month
-          </option>
 
-            <option value="3 Months">
-                3 Months
+            <option value="1 month">
+                1 month
             </option>
 
-            <option value="6 Months">
-                6 Months
+            <option value="3 months">
+                3 months
             </option>
 
-            <option value="9 Months">
-                9 Months
+            <option value="6 months">
+                6 months
             </option>
 
-            <option value="12 Months">
-                12 Months
+            <option value="9 months">
+                9 months
+            </option>
+
+            <option value="12 months">
+                12 months
             </option>
 
         </select>
 
         <br><br>
 
-        <button type="submit">
+        <label>
+
+            <input
+                type="checkbox"
+                id="agreeTerms"
+                required
+            >
+
+            I confirm that the information provided is
+            correct and that the loan application will be
+            reviewed according to Mwitari's Heritage
+            rules and conditions.
+
+        </label>
+
+        <br><br>
+
+        <button
+            type="submit"
+            id="submitButton"
+            disabled
+        >
             Submit Loan Application
         </button>
 
@@ -90,48 +116,315 @@
 
     <br>
 
+    <p id="applicationMessage"></p>
+
+    <br>
+
     <button onclick="location.href='loans.html'">
         ← Back to Loans
+    </button>
+
+    <br><br>
+
+    <button onclick="location.href='dashboard.html'">
+        🏠 Back to Dashboard
     </button>
 
 </div>
 
 
-<script>
+<script type="module">
 
-function submitLoan(event) {
+import { auth, db } from "./firebase.js";
 
-    event.preventDefault();
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-    const name =
-        document.getElementById("memberName").value;
-
-    const memberNumber =
-        document.getElementById("memberNumber").value;
-
-    const amount =
-        document.getElementById("loanAmount").value;
-
-    const purpose =
-        document.getElementById("loanPurpose").value;
-
-    const period =
-        document.getElementById("repaymentPeriod").value;
+import {
+    doc,
+    getDoc,
+    collection,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-    alert(
-        "Loan application submitted successfully!\n\n" +
+const loanForm =
+    document.getElementById("loanForm");
 
-        "Member: " + name + "\n" +
+const memberName =
+    document.getElementById("memberName");
 
-        "Membership No: " + memberNumber + "\n" +
+const memberNumber =
+    document.getElementById("memberNumber");
 
-        "Loan Amount: KSh " + amount + "\n" +
+const loanAmount =
+    document.getElementById("loanAmount");
 
-        "Purpose: " + purpose + "\n" +
+const loanPurpose =
+    document.getElementById("loanPurpose");
 
-        "Repayment Period: " + period
-    );
+const repaymentPeriod =
+    document.getElementById("repaymentPeriod");
+
+const agreeTerms =
+    document.getElementById("agreeTerms");
+
+const submitButton =
+    document.getElementById("submitButton");
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+const applicationMessage =
+    document.getElementById("applicationMessage");
+
+
+let currentUser = null;
+
+let currentMember = null;
+
+
+// ==========================================
+// CHECK MEMBER LOGIN
+// ==========================================
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.href =
+            "index.html";
+
+        return;
+    }
+
+
+    currentUser = user;
+
+
+    try {
+
+        const memberRef =
+            doc(db, "members", user.uid);
+
+        const memberSnap =
+            await getDoc(memberRef);
+
+
+        if (!memberSnap.exists()) {
+
+            loadingMessage.textContent =
+                "Your member account could not be found.";
+
+            return;
+        }
+
+
+        currentMember =
+            memberSnap.data();
+
+
+        // Fill in the member's information automatically
+        memberName.value =
+            currentMember.fullName || "";
+
+        memberNumber.value =
+            currentMember.memberNumber || "";
+
+
+        loadingMessage.textContent =
+            "Your member information has been loaded.";
+
+        submitButton.disabled = false;
+
+
+    } catch (error) {
+
+        console.error(
+            "Member loading error:",
+            error
+        );
+
+        loadingMessage.textContent =
+            "Unable to load your member information.";
+
+    }
+
+});
+
+
+// ==========================================
+// SUBMIT LOAN APPLICATION
+// ==========================================
+
+loanForm.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        if (!currentUser || !currentMember) {
+
+            applicationMessage.textContent =
+                "Your member account is not ready. Please try again.";
+
+            return;
+        }
+
+
+        submitButton.disabled = true;
+
+        applicationMessage.textContent =
+            "Submitting your loan application...";
+
+
+        try {
+
+            const amount =
+                Number(loanAmount.value);
+
+
+            if (amount <= 0) {
+
+                throw new Error(
+                    "Please enter a valid loan amount."
+                );
+
+            }
+
+
+            // Create a new loan application
+            const applicationRef =
+                await addDoc(
+                    collection(db, "loanApplications"),
+                    {
+
+                        // Member identification
+                        userId:
+                            currentUser.uid,
+
+                        memberNumber:
+                            currentMember.memberNumber || "",
+
+                        memberName:
+                            currentMember.fullName || "",
+
+                        email:
+                            currentMember.email || currentUser.email || "",
+
+
+                        // Loan request
+                        loanAmount:
+                            amount,
+
+                        purpose:
+                            loanPurpose.value.trim(),
+
+                        repaymentPeriod:
+                            repaymentPeriod.value,
+
+
+                        // Application status
+                        status:
+                            "pending",
+
+                        adminDecision:
+                            "",
+
+                        adminComment:
+                            "",
+
+
+                        // Dates
+                        submittedAt:
+                            serverTimestamp(),
+
+                        reviewedAt:
+                            null
+
+                    }
+                );
+
+
+            console.log(
+                "Loan application ID:",
+                applicationRef.id
+            );
+
+
+            applicationMessage.innerHTML = `
+
+                <strong>
+                    ✅ Loan application submitted successfully.
+                </strong>
+
+                <br><br>
+
+                Your application has been sent to the
+                Mwitari's Heritage administrator for review.
+
+                <br><br>
+
+                The administrator will assess your
+                eligibility according to the group's
+                loan conditions.
+
+            `;
+
+
+            // Clear only the requested loan information
+            loanAmount.value = "";
+            loanPurpose.value = "";
+            repaymentPeriod.value = "";
+            agreeTerms.checked = false;
+
+
+        } catch (error) {
+
+            console.error(
+                "Loan application error:",
+                error
+            );
+
+
+            applicationMessage.innerHTML = `
+
+                <strong>
+                    ❌ Loan application could not be submitted.
+                </strong>
+
+                <br><br>
+
+                ${escapeHTML(error.message)}
+
+            `;
+
+
+        } finally {
+
+            submitButton.disabled = false;
+
+        }
+
+    }
+);
+
+
+// ==========================================
+// PROTECT DISPLAYED TEXT
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
@@ -139,4 +432,4 @@ function submitLoan(event) {
 
 </body>
 
-</html>
+        </html>
