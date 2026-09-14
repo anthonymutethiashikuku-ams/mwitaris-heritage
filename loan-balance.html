@@ -20,27 +20,9 @@
 
     <h1>💰 Loan Balance</h1>
 
-    <p>
-        Enter your membership number to check your
-        outstanding loan balance.
+    <p id="loadingMessage">
+        Loading your loan information...
     </p>
-
-    <form onsubmit="checkBalance(event)">
-
-        <input
-            type="text"
-            id="memberNumber"
-            placeholder="Membership Number"
-            required
-        >
-
-        <button type="submit">
-            Check Balance
-        </button>
-
-    </form>
-
-    <br>
 
     <div id="balanceResult"></div>
 
@@ -59,63 +41,146 @@
 </div>
 
 
-<script>
+<script type="module">
 
-function checkBalance(event) {
+import { auth, db } from "./firebase.js";
 
-    event.preventDefault();
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-    const memberNumber =
-        document.getElementById("memberNumber").value;
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-    /*
-       DEMONSTRATION MEMBER
+const loadingMessage =
+    document.getElementById("loadingMessage");
 
-       This is sample information only.
-    */
+const balanceResult =
+    document.getElementById("balanceResult");
 
-    if (memberNumber === "MH001") {
 
-        document.getElementById("balanceResult").innerHTML = `
+onAuthStateChanged(auth, async (user) => {
+
+    // Make sure the member is logged in
+    if (!user) {
+
+        window.location.href =
+            "index.html";
+
+        return;
+    }
+
+
+    try {
+
+        // Get the logged-in member's Firestore document
+        const memberRef =
+            doc(db, "members", user.uid);
+
+        const memberSnap =
+            await getDoc(memberRef);
+
+
+        // Check whether the member exists
+        if (!memberSnap.exists()) {
+
+            loadingMessage.textContent =
+                "Member information could not be found.";
+
+            return;
+        }
+
+
+        const member =
+            memberSnap.data();
+
+
+        // Get the loan information
+        const loanAmount =
+            Number(member.loanAmount || 0);
+
+        const loanPaid =
+            Number(member.loanPaid || 0);
+
+        const loanBalance =
+            Number(member.loanBalance || 0);
+
+
+        // Stop the loading message
+        loadingMessage.textContent = "";
+
+
+        // Display the actual member's loan information
+        balanceResult.innerHTML = `
 
             <h2>Loan Details</h2>
 
             <p>
-                <strong>Membership No:</strong>
-                MH001
+                <strong>Member Name:</strong>
+                ${escapeHTML(member.fullName || "Not provided")}
             </p>
 
             <p>
+                <strong>Membership No:</strong>
+                ${escapeHTML(member.memberNumber || "Not provided")}
+            </p>
+
+            <hr>
+
+            <p>
                 <strong>Original Loan:</strong>
-                KSh 50,000
+                KSh ${loanAmount.toLocaleString()}
             </p>
 
             <p>
                 <strong>Amount Repaid:</strong>
-                KSh 20,000
+                KSh ${loanPaid.toLocaleString()}
             </p>
 
             <p>
                 <strong>Outstanding Balance:</strong>
-                KSh 30,000
+                KSh ${loanBalance.toLocaleString()}
             </p>
 
         `;
 
-    }
 
-    else {
+    } catch (error) {
 
-        document.getElementById("balanceResult").innerHTML = `
+        console.error(
+            "Loan balance loading error:",
+            error
+        );
+
+
+        loadingMessage.textContent =
+            "Unable to load your loan information.";
+
+
+        balanceResult.innerHTML = `
 
             <p>
-                Membership number not found.
+                ${escapeHTML(error.message)}
             </p>
 
         `;
 
     }
+
+});
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
