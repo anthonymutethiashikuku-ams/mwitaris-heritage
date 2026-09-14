@@ -13,17 +13,17 @@ import { initializeFirestore } from
 
 
 // ==========================================
-// FIREBASE CONFIGURATION
+// NEW FIREBASE PROJECT CONFIGURATION
 // ==========================================
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDPjZb2zO2uJZUveETWJeERRIyd1SGmKsA",
-    authDomain: "mwitari-s-heritage.firebaseapp.com",
-    projectId: "mwitari-s-heritage",
-    storageBucket: "mwitari-s-heritage.firebasestorage.app",
-    messagingSenderId: "774010218687",
-    appId: "1:774010218687:web:33fdeb0cedc4dfde2bbe0a",
-    measurementId: "G-J981E6KWN6"
+    apiKey: "AIzaSyBCNRCrJMLE5rMk7ibraToPYCFVipCTn_k",
+    authDomain: "mwitari-s-heritage-9f4ff.firebaseapp.com",
+    projectId: "mwitari-s-heritage-9f4ff",
+    storageBucket: "mwitari-s-heritage-9f4ff.firebasestorage.app",
+    messagingSenderId: "314644112716",
+    appId: "1:314644112716:web:405b8d26dc52730f0bdbe9",
+    measurementId: "G-W39T3JZF34"
 };
 
 
@@ -43,8 +43,6 @@ export const auth = getAuth(app);
 
 // ==========================================
 // FIRESTORE
-// Force long polling to avoid browser/network
-// connection problems.
 // ==========================================
 
 export const db = initializeFirestore(app, {
