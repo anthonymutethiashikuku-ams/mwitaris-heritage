@@ -4,7 +4,9 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Bylaws - Mwitari's Heritage</title>
 
@@ -16,44 +18,167 @@
 
 <div class="login-container">
 
-    <h1>📖 Mwitari's Heritage Bylaws</h1>
+    <h1>📜 Mwitari's Heritage Bylaws</h1>
 
-    <h2>1. Membership</h2>
+    <p id="loadingMessage">
+        Loading bylaws...
+    </p>
 
-    <ul>
-        <li>All members must register with the group.</li>
-        <li>Members must comply with the group's rules.</li>
-    </ul>
-
-    <h2>2. Savings</h2>
-
-    <ul>
-        <li>Members shall make regular savings contributions.</li>
-        <li>Members should maintain their savings records.</li>
-    </ul>
-
-    <h2>3. Loans</h2>
-
-    <ul>
-        <li>Members must meet the loan eligibility requirements.</li>
-        <li>Loans must be repaid within the agreed period.</li>
-    </ul>
-
-    <h2>4. Meetings</h2>
-
-    <ul>
-        <li>Members should attend scheduled group meetings.</li>
-        <li>Important group decisions shall follow the agreed procedures.</li>
-    </ul>
+    <div id="bylawsContainer"></div>
 
     <br>
 
     <button onclick="location.href='dashboard.html'">
-        Back to Dashboard
+        🏠 Back to Dashboard
     </button>
 
 </div>
 
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+    collection,
+    getDocs,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+const bylawsContainer =
+    document.getElementById("bylawsContainer");
+
+
+// ==========================================
+// LOAD BYLAWS
+// ==========================================
+
+async function loadBylaws() {
+
+    try {
+
+        const bylawsQuery =
+            query(
+                collection(db, "bylaws"),
+                orderBy("order")
+            );
+
+
+        const snapshot =
+            await getDocs(bylawsQuery);
+
+
+        loadingMessage.textContent = "";
+
+
+        if (snapshot.empty) {
+
+            bylawsContainer.innerHTML = `
+
+                <p>
+                    No bylaws have been added yet.
+                </p>
+
+            `;
+
+            return;
+        }
+
+
+        let html = "";
+
+
+        snapshot.forEach((bylawDoc) => {
+
+            const bylaw =
+                bylawDoc.data();
+
+
+            html += `
+
+                <div
+                    style="
+                        margin-bottom: 25px;
+                        padding: 15px;
+                        border: 1px solid #ccc;
+                        border-radius: 8px;
+                    "
+                >
+
+                    <h2>
+                        ${escapeHTML(
+                            bylaw.title || ""
+                        )}
+                    </h2>
+
+
+                    <p style="white-space: pre-line;">
+                        ${escapeHTML(
+                            bylaw.content || ""
+                        )}
+                    </p>
+
+                </div>
+
+            `;
+
+        });
+
+
+        bylawsContainer.innerHTML =
+            html;
+
+
+    } catch (error) {
+
+        console.error(
+            "Bylaws loading error:",
+            error
+        );
+
+
+        loadingMessage.textContent =
+            "Unable to load bylaws.";
+
+
+        bylawsContainer.innerHTML = `
+
+            <p>
+                ${escapeHTML(error.message)}
+            </p>
+
+        `;
+
+    }
+
+}
+
+
+// ==========================================
+// PROTECT DISPLAYED TEXT
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+loadBylaws();
+
+</script>
+
 </body>
 
-</html>
+    </html>
