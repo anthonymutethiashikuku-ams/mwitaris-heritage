@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
@@ -21,6 +22,7 @@
 
     <form id="registerForm">
 
+        <!-- Full Name -->
         <input
             type="text"
             id="fullName"
@@ -28,6 +30,7 @@
             required
         >
 
+        <!-- Membership Number -->
         <input
             type="text"
             id="memberNumber"
@@ -35,6 +38,7 @@
             required
         >
 
+        <!-- Email -->
         <input
             type="email"
             id="email"
@@ -42,6 +46,7 @@
             required
         >
 
+        <!-- Phone -->
         <input
             type="tel"
             id="phone"
@@ -49,6 +54,7 @@
             required
         >
 
+        <!-- Password -->
         <input
             type="password"
             id="password"
@@ -57,6 +63,7 @@
             required
         >
 
+        <!-- Confirm Password -->
         <input
             type="password"
             id="confirmPassword"
@@ -65,6 +72,40 @@
             required
         >
 
+        <!-- Recovery Question -->
+        <select id="recoveryQuestion" required>
+
+            <option value="">
+                Select a recovery question
+            </option>
+
+            <option value="mother_maiden_name">
+                What is your mother's maiden name?
+            </option>
+
+            <option value="first_school">
+                What was the name of your first school?
+            </option>
+
+            <option value="childhood_friend">
+                What was the name of your childhood best friend?
+            </option>
+
+            <option value="favorite_teacher">
+                What was the name of your favorite teacher?
+            </option>
+
+        </select>
+
+        <!-- Recovery Answer -->
+        <input
+            type="text"
+            id="recoveryAnswer"
+            placeholder="Answer to recovery question"
+            required
+        >
+
+        <!-- Register -->
         <button type="submit">
             Create Account
         </button>
@@ -73,6 +114,7 @@
 
     <br>
 
+    <!-- Back to Login -->
     <button onclick="location.href='index.html'">
         Back to Login
     </button>
@@ -94,114 +136,264 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 
-document.getElementById("registerForm")
-.addEventListener("submit", async function(event) {
+// Convert recovery answer into a SHA-256 hash
+async function hashAnswer(answer) {
 
-    event.preventDefault();
+    const normalizedAnswer =
+        answer.trim().toLowerCase();
 
-    const fullName =
-        document.getElementById("fullName").value.trim();
+    const encoder =
+        new TextEncoder();
 
-    const memberNumber =
-        document.getElementById("memberNumber").value.trim();
+    const data =
+        encoder.encode(normalizedAnswer);
 
-    const email =
-        document.getElementById("email").value.trim();
-
-    const phone =
-        document.getElementById("phone").value.trim();
-
-    const password =
-        document.getElementById("password").value;
-
-    const confirmPassword =
-        document.getElementById("confirmPassword").value;
-
-
-    if (password !== confirmPassword) {
-
-        alert("The passwords do not match.");
-
-        return;
-    }
-
-
-    try {
-
-        const userCredential =
-            await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-
-        const user = userCredential.user;
-
-
-        await setDoc(
-            doc(db, "members", user.uid),
-            {
-
-                uid: user.uid,
-
-                fullName: fullName,
-
-                memberNumber: memberNumber,
-
-                email: email,
-
-                phone: phone,
-
-                role: "member",
-
-                loanAmount: 0,
-
-                loanRepaid: 0,
-
-                loanBalance: 0,
-
-                savings: 0,
-
-                bankName: "",
-
-                accountNumber: ""
-
-            }
+    const hashBuffer =
+        await crypto.subtle.digest(
+            "SHA-256",
+            data
         );
 
-
-        alert(
-            "Registration successful! You can now log in."
+    const hashArray =
+        Array.from(
+            new Uint8Array(hashBuffer)
         );
 
-        window.location.href = "index.html";
+    return hashArray
+        .map(
+            byte => byte.toString(16).padStart(2, "0")
+        )
+        .join("");
+}
 
 
-    } catch (error) {
+// Registration form
+document
+    .getElementById("registerForm")
+    .addEventListener("submit", async function(event) {
 
-        console.error(error);
+        event.preventDefault();
 
-        if (error.code === "auth/email-already-in-use") {
 
-            alert("This email is already registered.");
+        // Get form values
+        const fullName =
+            document
+                .getElementById("fullName")
+                .value
+                .trim();
 
-        } else if (error.code === "auth/weak-password") {
 
-            alert("Password must be at least 6 characters.");
+        const memberNumber =
+            document
+                .getElementById("memberNumber")
+                .value
+                .trim();
 
-        } else {
+
+        const email =
+            document
+                .getElementById("email")
+                .value
+                .trim();
+
+
+        const phone =
+            document
+                .getElementById("phone")
+                .value
+                .trim();
+
+
+        const password =
+            document
+                .getElementById("password")
+                .value;
+
+
+        const confirmPassword =
+            document
+                .getElementById("confirmPassword")
+                .value;
+
+
+        const recoveryQuestion =
+            document
+                .getElementById("recoveryQuestion")
+                .value;
+
+
+        const recoveryAnswer =
+            document
+                .getElementById("recoveryAnswer")
+                .value
+                .trim();
+
+
+        // Check passwords
+        if (password !== confirmPassword) {
 
             alert(
-                "Registration failed: " + error.message
+                "The passwords do not match."
             );
+
+            return;
         }
 
-    }
 
-});
+        // Check recovery question
+        if (!recoveryQuestion) {
+
+            alert(
+                "Please select a recovery question."
+            );
+
+            return;
+        }
+
+
+        // Check recovery answer
+        if (!recoveryAnswer) {
+
+            alert(
+                "Please provide an answer to the recovery question."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            // Create Firebase Authentication account
+            const userCredential =
+                await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            const user =
+                userCredential.user;
+
+
+            // Hash the recovery answer
+            const recoveryAnswerHash =
+                await hashAnswer(
+                    recoveryAnswer
+                );
+
+
+            // Save member information in Firestore
+            await setDoc(
+                doc(
+                    db,
+                    "members",
+                    user.uid
+                ),
+                {
+
+                    uid: user.uid,
+
+                    fullName: fullName,
+
+                    memberNumber: memberNumber,
+
+                    email: email,
+
+                    phone: phone,
+
+                    role: "member",
+
+
+                    // Loan information
+                    loanAmount: 0,
+
+                    loanRepaid: 0,
+
+                    loanBalance: 0,
+
+
+                    // Savings
+                    savings: 0,
+
+
+                    // Bank information
+                    bankName: "",
+
+                    accountNumber: "",
+
+
+                    // Account recovery
+                    recoveryQuestion:
+                        recoveryQuestion,
+
+                    recoveryAnswerHash:
+                        recoveryAnswerHash
+
+                }
+            );
+
+
+            alert(
+                "Registration successful! You can now log in."
+            );
+
+
+            // Return to login page
+            window.location.href =
+                "index.html";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            if (
+                error.code ===
+                "auth/email-already-in-use"
+            ) {
+
+                alert(
+                    "This email is already registered."
+                );
+
+
+            } else if (
+                error.code ===
+                "auth/weak-password"
+            ) {
+
+                alert(
+                    "Password must be at least 6 characters."
+                );
+
+
+            } else if (
+                error.code ===
+                "auth/invalid-email"
+            ) {
+
+                alert(
+                    "Please enter a valid email address."
+                );
+
+
+            } else {
+
+                alert(
+                    "Registration failed: " +
+                    error.message
+                );
+
+            }
+
+        }
+
+    });
 
 </script>
 
 </body>
-</html>
+    </html>
