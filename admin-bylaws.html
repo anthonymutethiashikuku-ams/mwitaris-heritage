@@ -235,14 +235,14 @@ bylawForm.addEventListener(
 
         if (!title || !content || order < 1) {
 
-            message.innerhtml =
+            message.textContent =
                 "Please provide all bylaw information.";
 
             return;
         }
 
 
-        message.innerhtml =
+        message.textContent =
             "Adding bylaw...";
 
 
