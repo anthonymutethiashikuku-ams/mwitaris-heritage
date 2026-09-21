@@ -1,5 +1,1199 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Bylaws - Mwitari's Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        /* ==========================================
+           RICH TEXT EDITOR
+        ========================================== */
+
+        .editor-toolbar {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 6px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .editor-toolbar button {
+
+            min-width: 42px;
+
+            padding: 8px 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+            background: #f5f5f5;
+
+            cursor: pointer;
+
+            font-size: 15px;
+
+        }
+
+
+        .editor-toolbar button:hover {
+
+            background: #e0e0e0;
+
+        }
+
+
+        .editor-toolbar select {
+
+            padding: 8px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 5px;
+
+        }
+
+
+        #bylawContent {
+
+            width: 100%;
+
+            min-height: 220px;
+
+            padding: 12px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 6px;
+
+            background: white;
+
+            color: black;
+
+            text-align: left;
+
+            overflow-y: auto;
+
+        }
+
+
+        #bylawContent:focus {
+
+            outline: 2px solid #777;
+
+        }
+
+
+        #bylawContent h1 {
+
+            font-size: 28px;
+
+        }
+
+
+        #bylawContent h2 {
+
+            font-size: 24px;
+
+        }
+
+
+        #bylawContent h3 {
+
+            font-size: 20px;
+
+        }
+
+
+        .bylaw-content {
+
+            text-align: left;
+
+        }
+
+
+        .bylaw-content ul {
+
+            padding-left: 25px;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="login-container">
+
+    <h1>📜 Manage Bylaws</h1>
+
+
+    <p id="loadingMessage">
+        Checking administrator access...
+    </p>
+
+
+    <!-- ======================================
+         ADMIN CONTENT
+    ======================================= -->
+
+    <div id="adminContent" style="display:none;">
+
+
+        <h2 id="formHeading">
+            Add New Bylaw
+        </h2>
+
+
+        <!-- ======================================
+             ADD / EDIT BYLAW FORM
+        ======================================= -->
+
+        <form id="bylawForm">
+
+
+            <input
+                type="text"
+                id="bylawTitle"
+                placeholder="Bylaw Title"
+                required
+            >
+
+
+            <!-- ======================================
+                 RICH TEXT TOOLBAR
+            ======================================= -->
+
+            <div
+                class="editor-toolbar"
+                aria-label="Text formatting tools"
+            >
+
+                <button
+                    type="button"
+                    onclick="formatText('bold')"
+                    title="Bold"
+                >
+                    <b>B</b>
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="formatText('italic')"
+                    title="Italic"
+                >
+                    <i>I</i>
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="formatText('underline')"
+                    title="Underline"
+                >
+                    <u>U</u>
+                </button>
+
+
+                <select
+                    id="headingSelect"
+                    onchange="applyHeading(this.value)"
+                >
+
+                    <option value="">
+                        Paragraph
+                    </option>
+
+                    <option value="h1">
+                        Heading 1
+                    </option>
+
+                    <option value="h2">
+                        Heading 2
+                    </option>
+
+                    <option value="h3">
+                        Heading 3
+                    </option>
+
+                </select>
+
+
+                <button
+                    type="button"
+                    onclick="formatText('insertUnorderedList')"
+                    title="Bullet List"
+                >
+                    • List
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="formatText('removeFormat')"
+                    title="Remove Formatting"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+
+            <!-- ======================================
+                 EDITABLE CONTENT AREA
+            ======================================= -->
+
+            <div
+                id="bylawContent"
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+            ></div>
+
+
+            <br>
+
+
+            <input
+                type="number"
+                id="bylawOrder"
+                placeholder="Order (e.g. 1, 2, 3...)"
+                min="1"
+                required
+            >
+
+
+            <br><br>
+
+
+            <button type="submit" id="saveButton">
+                ➕ Add Bylaw
+            </button>
+
+
+            <button
+                type="button"
+                id="cancelEditButton"
+                style="display:none;"
+                onclick="cancelEdit()"
+            >
+                Cancel Edit
+            </button>
+
+
+        </form>
+
+
+        <p id="message"></p>
+
+
+        <hr>
+
+
+        <!-- ======================================
+             EXISTING BYLAWS
+        ======================================= -->
+
+        <h2>Existing Bylaws</h2>
+
+
+        <div id="bylawsList">
+            Loading bylaws...
+        </div>
+
+
+        <br>
+
+
+        <button
+            onclick="location.href='admin-dashboard.html'"
+        >
+            ← Admin Dashboard
+        </button>
+
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+
+import { auth, db } from "./firebase.js";
+
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+import {
+    collection,
+    getDocs,
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+const loadingMessage =
+    document.getElementById("loadingMessage");
+
+
+const adminContent =
+    document.getElementById("adminContent");
+
+
+const bylawForm =
+    document.getElementById("bylawForm");
+
+
+const message =
+    document.getElementById("message");
+
+
+const bylawsList =
+    document.getElementById("bylawsList");
+
+
+const bylawTitle =
+    document.getElementById("bylawTitle");
+
+
+const bylawContent =
+    document.getElementById("bylawContent");
+
+
+const bylawOrder =
+    document.getElementById("bylawOrder");
+
+
+const formHeading =
+    document.getElementById("formHeading");
+
+
+const saveButton =
+    document.getElementById("saveButton");
+
+
+const cancelEditButton =
+    document.getElementById("cancelEditButton");
+
+
+let editingBylawId = null;
+
+
+// ==========================================
+// CHECK ADMIN LOGIN
+// ==========================================
+
+onAuthStateChanged(auth, async (user) => {
+
+
+    if (!user) {
+
+        window.location.href =
+            "admin-login.html";
+
+        return;
+
+    }
+
+
+    try {
+
+
+        const adminRef =
+            doc(db, "members", user.uid);
+
+
+        const adminSnap =
+            await getDoc(adminRef);
+
+
+        if (
+            !adminSnap.exists() ||
+            adminSnap.data().role !== "admin"
+        ) {
+
+            alert(
+                "Administrator access required."
+            );
+
+
+            window.location.href =
+                "dashboard.html";
+
+
+            return;
+
+        }
+
+
+        loadingMessage.textContent = "";
+
+
+        adminContent.style.display =
+            "block";
+
+
+        await loadBylaws();
+
+
+    } catch (error) {
+
+
+        console.error(
+            "Administrator verification error:",
+            error
+        );
+
+
+        loadingMessage.textContent =
+            "Unable to verify administrator.";
+
+    }
+
+});
+
+
+// ==========================================
+// TEXT FORMATTING
+// ==========================================
+
+window.formatText =
+    function(command) {
+
+
+        bylawContent.focus();
+
+
+        document.execCommand(
+            command,
+            false,
+            null
+        );
+
+
+    };
+
+
+// ==========================================
+// HEADINGS
+// ==========================================
+
+window.applyHeading =
+    function(tag) {
+
+
+        if (!tag) {
+
+            return;
+
+        }
+
+
+        bylawContent.focus();
+
+
+        document.execCommand(
+            "formatBlock",
+            false,
+            tag
+        );
+
+
+        document.getElementById(
+            "headingSelect"
+        ).value = "";
+
+    };
+
+
+// ==========================================
+// ADD / UPDATE BYLAW
+// ==========================================
+
+bylawForm.addEventListener(
+    "submit",
+    async function(event) {
+
+
+        event.preventDefault();
+
+
+        const title =
+            bylawTitle.value.trim();
+
+
+        const content =
+            sanitizeHTML(
+                bylawContent.innerHTML
+            );
+
+
+        const order =
+            Number(
+                bylawOrder.value
+            );
+
+
+        if (
+            !title ||
+            !stripHTML(content).trim() ||
+            order < 1
+        ) {
+
+
+            message.textContent =
+                "Please provide all bylaw information.";
+
+
+            return;
+
+        }
+
+
+        message.textContent =
+            editingBylawId
+                ? "Updating bylaw..."
+                : "Adding bylaw...";
+
+
+        try {
+
+
+            if (editingBylawId) {
+
+
+                const bylawRef =
+                    doc(
+                        db,
+                        "bylaws",
+                        editingBylawId
+                    );
+
+
+                await updateDoc(
+                    bylawRef,
+                    {
+
+                        title:
+                            title,
+
+                        content:
+                            content,
+
+                        order:
+                            order
+
+                    }
+                );
+
+
+                message.textContent =
+                    "✅ Bylaw updated successfully.";
+
+
+            } else {
+
+
+                await addDoc(
+                    collection(
+                        db,
+                        "bylaws"
+                    ),
+                    {
+
+                        title:
+                            title,
+
+                        content:
+                            content,
+
+                        order:
+                            order
+
+                    }
+                );
+
+
+                message.textContent =
+                    "✅ Bylaw added successfully.";
+
+            }
+
+
+            resetForm();
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Save bylaw error:",
+                error
+            );
+
+
+            message.textContent =
+                "❌ Unable to save bylaw: " +
+                error.message;
+
+        }
+
+    }
+);
+
+
+// ==========================================
+// LOAD EXISTING BYLAWS
+// ==========================================
+
+async function loadBylaws() {
+
+
+    try {
+
+
+        const bylawsQuery =
+            query(
+                collection(
+                    db,
+                    "bylaws"
+                ),
+                orderBy("order")
+            );
+
+
+        const snapshot =
+            await getDocs(
+                bylawsQuery
+            );
+
+
+        if (snapshot.empty) {
+
+
+            bylawsList.innerHTML = `
+
+                <p>
+                    No bylaws have been added yet.
+                </p>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        let html = "";
+
+
+        snapshot.forEach(
+            (bylawDoc) => {
+
+
+                const bylaw =
+                    bylawDoc.data();
+
+
+                html += `
+
+                    <div
+                        style="
+                            border: 1px solid #ccc;
+                            padding: 15px;
+                            margin-bottom: 20px;
+                            border-radius: 8px;
+                        "
+                    >
+
+                        <h3>
+                            ${escapeHTML(
+                                bylaw.title || ""
+                            )}
+                        </h3>
+
+
+                        <div
+                            class="bylaw-content"
+                        >
+
+                            ${sanitizeHTML(
+                                bylaw.content || ""
+                            )}
+
+                        </div>
+
+
+                        <p>
+
+                            <strong>
+                                Order:
+                            </strong>
+
+                            ${Number(
+                                bylaw.order || 0
+                            )}
+
+                        </p>
+
+
+                        <button
+                            onclick="editBylaw('${bylawDoc.id}')"
+                        >
+                            ✏️ Edit
+                        </button>
+
+
+                        <button
+                            onclick="deleteBylaw('${bylawDoc.id}')"
+                        >
+                            🗑️ Delete
+                        </button>
+
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+
+        bylawsList.innerHTML =
+            html;
+
+
+    } catch (error) {
+
+
+        console.error(
+            "Loading bylaws error:",
+            error
+        );
+
+
+        bylawsList.innerHTML = `
+
+            <p>
+                ❌ Unable to load bylaws.
+            </p>
+
+            <p>
+                ${escapeHTML(
+                    error.message
+                )}
+            </p>
+
+        `;
+
+    }
+
+}
+
+
+// ==========================================
+// EDIT BYLAW
+// ==========================================
+
+window.editBylaw =
+    async function(bylawId) {
+
+
+        try {
+
+
+            const bylawRef =
+                doc(
+                    db,
+                    "bylaws",
+                    bylawId
+                );
+
+
+            const bylawSnap =
+                await getDoc(
+                    bylawRef
+                );
+
+
+            if (!bylawSnap.exists()) {
+
+
+                alert(
+                    "Bylaw no longer exists."
+                );
+
+
+                return;
+
+            }
+
+
+            const bylaw =
+                bylawSnap.data();
+
+
+            bylawTitle.value =
+                bylaw.title || "";
+
+
+            bylawContent.innerHTML =
+                sanitizeHTML(
+                    bylaw.content || ""
+                );
+
+
+            bylawOrder.value =
+                bylaw.order || 1;
+
+
+            editingBylawId =
+                bylawId;
+
+
+            formHeading.textContent =
+                "✏️ Edit Bylaw";
+
+
+            saveButton.textContent =
+                "💾 Update Bylaw";
+
+
+            cancelEditButton.style.display =
+                "inline-block";
+
+
+            message.textContent =
+                "Editing selected bylaw.";
+
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Edit bylaw error:",
+                error
+            );
+
+
+            alert(
+                "Unable to load bylaw: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// CANCEL EDIT
+// ==========================================
+
+window.cancelEdit =
+    function() {
+
+
+        resetForm();
+
+
+        message.textContent =
+            "Edit cancelled.";
+
+    };
+
+
+// ==========================================
+// RESET FORM
+// ==========================================
+
+function resetForm() {
+
+
+    bylawForm.reset();
+
+
+    bylawContent.innerHTML =
+        "";
+
+
+    editingBylawId =
+        null;
+
+
+    formHeading.textContent =
+        "Add New Bylaw";
+
+
+    saveButton.textContent =
+        "➕ Add Bylaw";
+
+
+    cancelEditButton.style.display =
+        "none";
+
+
+    document.getElementById(
+        "headingSelect"
+    ).value = "";
+
+}
+
+
+// ==========================================
+// DELETE BYLAW
+// ==========================================
+
+window.deleteBylaw =
+    async function(bylawId) {
+
+
+        const confirmed =
+            confirm(
+                "Are you sure you want to delete this bylaw?"
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        try {
+
+
+            await deleteDoc(
+                doc(
+                    db,
+                    "bylaws",
+                    bylawId
+                )
+            );
+
+
+            alert(
+                "Bylaw deleted successfully."
+            );
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Delete bylaw error:",
+                error
+            );
+
+
+            alert(
+                "Unable to delete bylaw: " +
+                error.message
+            );
+
+        }
+
+    };
+
+
+// ==========================================
+// SAFE HTML SANITIZER
+// ==========================================
+
+function sanitizeHTML(html) {
+
+
+    const template =
+        document.createElement(
+            "template"
+        );
+
+
+    template.innerHTML =
+        html;
+
+
+    const allowedTags = [
+
+        "B",
+        "STRONG",
+        "I",
+        "EM",
+        "U",
+        "H1",
+        "H2",
+        "H3",
+        "UL",
+        "LI",
+        "BR",
+        "P"
+
+    ];
+
+
+    const elements =
+        template.content.querySelectorAll("*");
+
+
+    elements.forEach(
+        (element) => {
+
+
+            if (
+                !allowedTags.includes(
+                    element.tagName
+                )
+            ) {
+
+
+                const text =
+                    document.createTextNode(
+                        element.textContent
+                    );
+
+
+                element.replaceWith(
+                    text
+                );
+
+
+                return;
+
+            }
+
+
+            // Remove all attributes.
+            // This prevents unsafe attributes
+            // such as onclick or javascript URLs.
+
+            [...element.attributes]
+                .forEach(
+                    attribute => {
+
+                        element.removeAttribute(
+                            attribute.name
+                        );
+
+                    }
+                );
+
+        }
+    );
+
+
+    return template.innerHTML;
+
+}
+
+
+// ==========================================
+// ESCAPE PLAIN HTML
+// ==========================================
+
+function escapeHTML(value) {
+
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+// ==========================================
+// REMOVE HTML FOR VALIDATION
+// ==========================================
+
+function stripHTML(value) {
+
+
+    const temporary =
+        document.createElement(
+            "div"
+        );
+
+
+    temporary.innerHTML =
+        value;
+
+
+    return temporary.textContent ||
+           temporary.innerText ||
+           "";
+
+}
+
+</script>
+
+
+</body>
+
+</html><html lang="en">
 
 <head>
 
