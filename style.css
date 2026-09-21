@@ -147,3 +147,26 @@ button:active {
 .card p {
     color: #000000;
 }
+/*=======================
+password
+=========================*/
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    padding-right: 50px;
+}
+
+.show-password {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    background: transparent;
+    color: #000000;
+    font-size: 18px;
+    }
