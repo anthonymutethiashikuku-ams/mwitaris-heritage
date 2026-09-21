@@ -57,7 +57,16 @@
 </button>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js">
+function togglePassword() {
+    const password = document.getElementById("password");
 
+    if (password.type === "password") {
+        password.type = "text";
+    } else {
+        password.type = "password";
+    }
+}
+    </script>
 </body>
 </html>
