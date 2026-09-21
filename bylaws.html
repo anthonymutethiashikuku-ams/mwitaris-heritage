@@ -107,6 +107,7 @@ async function loadBylaws() {
                         padding: 15px;
                         border: 1px solid #ccc;
                         border-radius: 8px;
+                        text-align: left;
                     "
                 >
 
@@ -117,11 +118,13 @@ async function loadBylaws() {
                     </h2>
 
 
-                    <p style="white-space: pre-line;">
-                        ${escapeHTML(
+                    <div class="bylaw-content">
+
+                        ${sanitizeHTML(
                             bylaw.content || ""
                         )}
-                    </p>
+
+                    </div>
 
                 </div>
 
@@ -160,7 +163,89 @@ async function loadBylaws() {
 
 
 // ==========================================
-// PROTECT DISPLAYED TEXT
+// ALLOW ONLY SAFE FORMATTING
+// ==========================================
+
+function sanitizeHTML(html) {
+
+    const template =
+        document.createElement("template");
+
+    template.innerHTML = html;
+
+
+    const allowedTags = [
+        "B",
+        "STRONG",
+        "I",
+        "EM",
+        "U",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "UL",
+        "OL",
+        "LI",
+        "P",
+        "BR"
+    ];
+
+
+    function cleanNode(node) {
+
+        const children =
+            Array.from(node.childNodes);
+
+
+        children.forEach(child => {
+
+            if (child.nodeType === Node.ELEMENT_NODE) {
+
+                if (!allowedTags.includes(child.tagName)) {
+
+                    const text =
+                        document.createTextNode(
+                            child.textContent
+                        );
+
+                    child.replaceWith(text);
+
+                    return;
+                }
+
+
+                // Remove all attributes
+                // such as onclick, style, href, etc.
+                Array.from(child.attributes)
+                    .forEach(attribute => {
+
+                        child.removeAttribute(
+                            attribute.name
+                        );
+
+                    });
+
+
+                cleanNode(child);
+
+            }
+
+        });
+
+    }
+
+
+    cleanNode(template.content);
+
+
+    return template.innerHTML;
+
+}
+
+
+// ==========================================
+// ESCAPE NORMAL TEXT
 // ==========================================
 
 function escapeHTML(value) {
