@@ -24,12 +24,24 @@
     placeholder="Email Address"
     required
               >
-              <input 
-    type="password" 
-    id="password" 
-    placeholder="password"
-    required
->
+              <div class="password-container">
+
+    <input 
+        type="password" 
+        id="password" 
+        placeholder="Password"
+        required
+    >
+
+    <button
+        type="button"
+        class="show-password"
+        onclick="togglePassword()"
+    >
+        👁️
+    </button>
+
+              </div>
 
 
             <button type="submit">Login</button>
@@ -57,7 +69,8 @@
 </button>
     </div>
 
-    <script type="module" src="script.js">
+    <script type="module" src="script.js"></script>
+    <script>
 function togglePassword() {
     const password = document.getElementById("password");
 
