@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mwitari's Heritage - Manage Bylaws</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{min-height:100vh;padding:20px 12px;align-items:flex-start}
+.bylaw-admin-container{width:100%;max-width:900px;margin:auto;padding:24px;border-radius:15px;background:rgba(255,255,255,.95);box-shadow:0 5px 20px rgba(0,0,0,.15)}
+h1,h2{color:#0B3D91;text-align:center}.bylaw-admin-container h2{margin-bottom:24px}
+.field-group{margin-bottom:18px}.field-group label{display:block;margin-bottom:7px;font-weight:bold;color:#0B3D91}
+.field-group input{width:100%;padding:12px;margin:0;border:1px solid #B39DDB;border-radius:8px;font-size:16px}
+.editor-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px solid #B39DDB;border-radius:8px 8px 0 0;background:#f4f0fa}
+.editor-toolbar button{width:auto;min-width:42px;padding:9px 12px;margin:0;background:#fff;color:#0B3D91;border:1px solid #B39DDB}
+.editor-toolbar select{width:auto;min-width:125px;padding:8px;border:1px solid #B39DDB;border-radius:6px}
+#bylawContent{min-height:300px;padding:15px;border:1px solid #B39DDB;border-top:0;border-radius:0 0 8px 8px;background:#fff;color:#222;font-size:16px;line-height:1.6;outline:none;overflow-wrap:anywhere}
+#bylawContent:focus{border-color:#0B3D91}
+#bylawContent h1,#bylawContent h2,#bylawContent h3,#bylawContent h4{color:#0B3D91;margin:12px 0}
+#bylawContent ul,#bylawContent ol,.bylaw-preview ul,.bylaw-preview ol{padding-left:30px}
+.editor-help{font-size:13px;color:#666}.form-buttons,.bylaw-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.form-buttons button,.bylaw-actions button{flex:1;min-width:130px}.form-buttons #cancelEditButton{display:none;background:#666;color:#fff}
+.status-message{text-align:center;font-weight:bold;min-height:22px}.bylaws-list{margin-top:35px}
+.bylaw-item{padding:18px;margin-bottom:15px;border:1px solid #B39DDB;border-radius:10px;background:#fff}
+.bylaw-item h3{color:#0B3D91;margin-bottom:5px}.bylaw-order{font-size:14px;color:#666;margin-bottom:10px}
+.bylaw-preview{padding:12px;background:#f8f8f8;border-radius:7px;line-height:1.6;overflow-wrap:anywhere}
+.edit-button{background:#0B3D91;color:#fff}.delete-button{background:#b00020;color:#fff}.back-button{margin-top:25px;background:#666;color:#fff}
+@media(max-width:600px){.bylaw-admin-container{padding:16px}.editor-toolbar select{width:100%}}
+</style>
+</head>
+<body>
+<div class="bylaw-admin-container">
+<h1>Mwitari's Heritage</h1>
+<h2>Manage Bylaws</h2>
+<p id="authMessage" class="status-message">Checking administrator account...</p>
+
+<form id="bylawForm">
+<div class="field-group">
+<label for="bylawTitle">Bylaw Title</label>
+<input type="text" id="bylawTitle" placeholder="Enter bylaw title" required>
+</div>
+<div class="field-group">
+<label for="bylawOrder">Order</label>
+<input type="number" id="bylawOrder" min="0" step="1" placeholder="Example: 1" required>
+</div>
+<div class="field-group">
+<label>Bylaw Content</label>
+<div class="editor-toolbar">
+<button type="button" class="format-button" data-command="bold" title="Bold"><strong>B</strong></button>
+<button type="button" class="format-button" data-command="italic" title="Italic"><em>I</em></button>
+<button type="button" class="format-button" data-command="underline" title="Underline"><u>U</u></button>
+<button type="button" class="format-button" data-command="insertUnorderedList" title="Bullet list">• List</button>
+<button type="button" class="format-button" data-command="insertOrderedList" title="Numbered list">1. List</button>
+<select id="headingSelect" title="Heading level">
+<option value="">Normal text</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option><option value="H4">Heading 4</option>
+</select>
+<button type="button" id="clearFormattingButton" title="Clear formatting">Clear</button>
+</div>
+<div id="bylawContent" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true"></div>
+<p class="editor-help">Select the exact words you want to format, then choose the required formatting button.</p>
+</div>
+<div class="form-buttons">
+<button type="submit" id="saveButton">Add Bylaw</button>
+<button type="button" id="cancelEditButton">Cancel Edit</button>
+</div>
+</form>
+
+<p id="statusMessage" class="status-message"></p>
+<section class="bylaws-list">
+<h2>Existing Bylaws</h2>
+<div id="bylawsList"><p>Loading bylaws...</p></div>
+</section>
+<button type="button" class="back-button" id="backButton">Back to Admin Dashboard</button>
+</div>
+
+<script type="module">
+import {auth,db} from "./firebase.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {collection,doc,getDoc,getDocs,addDoc,updateDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const titleEl=document.getElementById("bylawTitle");
+const orderEl=document.getElementById("bylawOrder");
+const contentEl=document.getElementById("bylawContent");
+const form=document.getElementById("bylawForm");
+const saveBtn=document.getElementById("saveButton");
+const cancelBtn=document.getElementById("cancelEditButton");
+const listEl=document.getElementById("bylawsList");
+const statusEl=document.getElementById("statusMessage");
+const authEl=document.getElementById("authMessage");
+const headingEl=document.getElementById("headingSelect");
+const clearBtn=document.getElementById("clearFormattingButton");
+
+let editingId=null;
+let savedRange=null;
+let isAdmin=false;
+
+function sanitizeHTML(html){
+    const t=document.createElement("template");
+    t.innerHTML=html;
+    const allowed=new Set(["B","STRONG","I","EM","U","H1","H2","H3","H4","UL","OL","LI","P","BR"]);
+    function clean(node){
+        if(node.nodeType===Node.TEXT_NODE)return;
+        if(node.nodeType!==Node.ELEMENT_NODE){node.remove();return;}
+        if(!allowed.has(node.tagName)){
+            const f=document.createDocumentFragment();
+            while(node.firstChild)f.appendChild(node.firstChild);
+            node.replaceWith(f);
+            return;
+        }
+        while(node.attributes.length)node.removeAttribute(node.attributes[0].name);
+        Array.from(node.childNodes).forEach(clean);
+    }
+    Array.from(t.content.childNodes).forEach(clean);
+    return t.innerHTML;
+}
+function escapeHTML(v){
+    return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function selectionInside(range){
+    return range && contentEl.contains(range.commonAncestorContainer);
+}
+function saveSelection(){
+    const s=window.getSelection();
+    if(!s||!s.rangeCount)return;
+    const r=s.getRangeAt(0);
+    if(selectionInside(r))savedRange=r.cloneRange();
+}
+function restoreSelection(){
+    if(!savedRange||!selectionInside(savedRange))return false;
+    const s=window.getSelection();
+    s.removeAllRanges();s.addRange(savedRange);return true;
+}
+document.addEventListener("selectionchange",saveSelection);
+contentEl.addEventListener("mouseup",saveSelection);
+contentEl.addEventListener("keyup",saveSelection);
+contentEl.addEventListener("touchend",()=>setTimeout(saveSelection,0));
+
+document.querySelectorAll(".format-button").forEach(btn=>{
+    btn.addEventListener("pointerdown",e=>{
+        e.preventDefault();
+        saveSelection();
+        if(!restoreSelection()){contentEl.focus();return;}
+        try{document.execCommand(btn.dataset.command,false,null);}
+        catch(err){console.error(err);}
+        saveSelection();contentEl.focus();
+    });
+});
+headingEl.addEventListener("pointerdown",saveSelection);
+headingEl.addEventListener("change",function(){
+    if(!this.value)return;
+    if(!restoreSelection()){contentEl.focus();this.value="";return;}
+    try{document.execCommand("formatBlock",false,this.value);}
+    catch(err){console.error(err);}
+    saveSelection();contentEl.focus();this.value="";
+});
+clearBtn.addEventListener("pointerdown",e=>{
+    e.preventDefault();saveSelection();
+    if(!restoreSelection()){contentEl.focus();return;}
+    try{document.execCommand("removeFormat",false,null);}catch(err){console.error(err);}
+    saveSelection();contentEl.focus();
+});
+
+onAuthStateChanged(auth,async user=>{
+    if(!user){location.href="admin-login.html";return;}
+    try{
+        const snap=await getDoc(doc(db,"members",user.uid));
+        if(!snap.exists()||snap.data().role!=="admin"){location.href="admin-login.html";return;}
+        isAdmin=true;authEl.textContent="Administrator access verified.";
+        await loadBylaws();
+    }catch(err){
+        console.error(err);authEl.textContent="Unable to verify administrator account.";
+        listEl.innerHTML="<p>Could not load bylaws.</p>";
+    }
+});
+
+async function loadBylaws(){
+    if(!isAdmin)return;
+    try{
+        const snap=await getDocs(collection(db,"bylaws"));
+        const rows=[];
+        snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+        rows.sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+        if(!rows.length){listEl.innerHTML="<p>No bylaws have been added yet.</p>";return;}
+        listEl.innerHTML="";
+        rows.forEach(b=>{
+            const item=document.createElement("div");
+            item.className="bylaw-item";
+            item.innerHTML=`
+                <h3>${escapeHTML(b.title||"Untitled Bylaw")}</h3>
+                <div class="bylaw-order">Order: ${escapeHTML(b.order??"")}</div>
+                <div class="bylaw-preview">${sanitizeHTML(b.content||"")||"<em>No content</em>"}</div>
+                <div class="bylaw-actions">
+                    <button type="button" class="edit-button" data-action="edit" data-id="${escapeHTML(b.id)}">Edit</button>
+                    <button type="button" class="delete-button" data-action="delete" data-id="${escapeHTML(b.id)}">Delete</button>
+                </div>`;
+            listEl.appendChild(item);
+        });
+    }catch(err){console.error(err);listEl.innerHTML="<p>Unable to load bylaws.</p>";}
+}
+listEl.addEventListener("click",async e=>{
+    const b=e.target.closest("button[data-action]");if(!b)return;
+    if(b.dataset.action==="edit")await editBylaw(b.dataset.id);
+    if(b.dataset.action==="delete")await deleteBylaw(b.dataset.id);
+});
+async function editBylaw(id){
+    try{
+        const s=await getDoc(doc(db,"bylaws",id));
+        if(!s.exists()){alert("This bylaw no longer exists.");await loadBylaws();return;}
+        const b=s.data();editingId=id;
+        titleEl.value=b.title||"";orderEl.value=b.order??"";
+        contentEl.innerHTML=sanitizeHTML(b.content||"");
+        saveBtn.textContent="Update Bylaw";cancelBtn.style.display="block";
+        scrollTo({top:0,behavior:"smooth"});contentEl.focus();
+    }catch(err){console.error(err);alert("Could not load this bylaw for editing.");}
+}
+async function deleteBylaw(id){
+    if(!confirm("Are you sure you want to delete this bylaw?"))return;
+    try{await deleteDoc(doc(db,"bylaws",id));statusEl.textContent="Bylaw deleted successfully.";await loadBylaws();}
+    catch(err){console.error(err);statusEl.textContent="Could not delete the bylaw.";}
+}
+function resetForm(){
+    editingId=null;form.reset();contentEl.innerHTML="";
+    savedRange=null;saveBtn.textContent="Add Bylaw";cancelBtn.style.display="none";
+}
+cancelBtn.addEventListener("click",()=>{resetForm();scrollTo({top:0,behavior:"smooth"});});
+
+form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!isAdmin){alert("Administrator access is required.");return;}
+    const title=titleEl.value.trim();
+    const order=Number(orderEl.value);
+    const content=sanitizeHTML(contentEl.innerHTML);
+    if(!title){alert("Please enter a bylaw title.");return;}
+    if(!Number.isInteger(order)||order<0){alert("Please enter a valid order number.");return;}
+    if(!content.trim()){alert("Please enter the bylaw content.");return;}
+    saveBtn.disabled=true;saveBtn.textContent="Saving...";
+    try{
+        if(editingId){
+            await updateDoc(doc(db,"bylaws",editingId),{title,order,content,updatedAt:serverTimestamp()});
+            statusEl.textContent="Bylaw updated successfully.";
+        }else{
+            await addDoc(collection(db,"bylaws"),{title,order,content,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+            statusEl.textContent="Bylaw added successfully.";
+        }
+        resetForm();await loadBylaws();
+    }catch(err){console.error(err);statusEl.textContent="Could not save the bylaw. Please try again.";}
+    finally{saveBtn.disabled=false;}
+});
+document.getElementById("backButton").addEventListener("click",()=>location.href="admin-dashboard.html");
+</script>
+</body>
+</html>
