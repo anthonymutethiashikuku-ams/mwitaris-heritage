@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -15,9 +14,21 @@
 
     <style>
 
-        /* ==========================================
-           RICH TEXT EDITOR
-        ========================================== */
+        /* ==================================================
+           BYLAWS PAGE
+        ================================================== */
+
+        .bylaw-admin-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+
+        /* ==================================================
+           RICH TEXT TOOLBAR
+        ================================================== */
 
         .editor-toolbar {
 
@@ -25,28 +36,54 @@
 
             flex-wrap: wrap;
 
+            align-items: center;
+
             gap: 6px;
 
-            margin-bottom: 8px;
+            width: 100%;
+
+            margin: 12px 0 8px;
 
         }
 
 
+        /*
+         IMPORTANT:
+
+         style.css contains a global:
+
+         button {
+             width: 100%;
+         }
+
+         Therefore we MUST override it here.
+        */
+
         .editor-toolbar button {
 
-            min-width: 42px;
+            width: auto;
 
-            padding: 8px 10px;
+            min-width: 46px;
+
+            flex: 0 0 auto;
+
+            padding: 9px 13px;
+
+            margin: 0;
 
             border: 1px solid #ccc;
 
-            border-radius: 5px;
+            border-radius: 6px;
 
             background: #f5f5f5;
 
-            cursor: pointer;
+            color: #0B3D91;
 
-            font-size: 15px;
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
 
         }
 
@@ -58,24 +95,24 @@
         }
 
 
-        .editor-toolbar select {
+        .editor-toolbar button:active {
 
-            padding: 8px;
-
-            border: 1px solid #ccc;
-
-            border-radius: 5px;
+            transform: scale(0.97);
 
         }
 
 
-        #bylawContent {
+        .editor-toolbar select {
 
-            width: 100%;
+            width: auto;
 
-            min-height: 220px;
+            min-width: 130px;
 
-            padding: 12px;
+            flex: 0 0 auto;
+
+            padding: 9px 10px;
+
+            margin: 0;
 
             border: 1px solid #ccc;
 
@@ -83,18 +120,53 @@
 
             background: white;
 
-            color: black;
+            color: #0B3D91;
+
+            font-size: 15px;
+
+        }
+
+
+        /* ==================================================
+           EDITOR
+        ================================================== */
+
+        #bylawContent {
+
+            width: 100%;
+
+            min-height: 260px;
+
+            padding: 15px;
+
+            margin-top: 5px;
+
+            border: 1px solid #aaa;
+
+            border-radius: 8px;
+
+            background: white;
+
+            color: #000000;
 
             text-align: left;
 
+            line-height: 1.6;
+
             overflow-y: auto;
+
+            outline: none;
 
         }
 
 
         #bylawContent:focus {
 
-            outline: 2px solid #777;
+            border-color: #0B3D91;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(11, 61, 145, 0.15);
 
         }
 
@@ -103,12 +175,16 @@
 
             font-size: 28px;
 
+            margin: 12px 0;
+
         }
 
 
         #bylawContent h2 {
 
             font-size: 24px;
+
+            margin: 10px 0;
 
         }
 
@@ -117,19 +193,177 @@
 
             font-size: 20px;
 
+            margin: 8px 0;
+
         }
 
 
-        .bylaw-content {
+        #bylawContent h4 {
+
+            font-size: 18px;
+
+            margin: 8px 0;
+
+        }
+
+
+        #bylawContent ul,
+        #bylawContent ol {
+
+            padding-left: 30px;
+
+            margin: 8px 0;
+
+        }
+
+
+        #bylawContent p {
+
+            margin: 6px 0;
+
+        }
+
+
+        /* ==================================================
+           DISPLAYED BYLAWS
+        ================================================== */
+
+        .bylaw-item {
+
+            width: 100%;
+
+            padding: 18px;
+
+            margin-bottom: 20px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 10px;
+
+            background: rgba(255,255,255,0.92);
 
             text-align: left;
 
         }
 
 
-        .bylaw-content ul {
+        .bylaw-item h3 {
 
-            padding-left: 25px;
+            color: #0B3D91;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .bylaw-content {
+
+            color: #000000;
+
+            text-align: left;
+
+            line-height: 1.6;
+
+        }
+
+
+        .bylaw-content h1,
+        .bylaw-content h2,
+        .bylaw-content h3,
+        .bylaw-content h4 {
+
+            color: #0B3D91;
+
+            margin-top: 12px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .bylaw-content ul,
+        .bylaw-content ol {
+
+            padding-left: 30px;
+
+            margin: 8px 0;
+
+        }
+
+
+        .bylaw-content p {
+
+            margin: 6px 0;
+
+        }
+
+
+        /* ==================================================
+           EDIT / DELETE BUTTONS
+        ================================================== */
+
+        .bylaw-actions {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 8px;
+
+            margin-top: 15px;
+
+        }
+
+
+        .bylaw-actions button {
+
+            width: auto;
+
+            flex: 0 0 auto;
+
+            padding: 10px 16px;
+
+        }
+
+
+        /* ==================================================
+           MOBILE
+        ================================================== */
+
+        @media (max-width: 600px) {
+
+            .editor-toolbar {
+
+                gap: 5px;
+
+            }
+
+
+            .editor-toolbar button {
+
+                min-width: 42px;
+
+                padding: 8px 10px;
+
+                font-size: 15px;
+
+            }
+
+
+            .editor-toolbar select {
+
+                min-width: 120px;
+
+                padding: 8px;
+
+            }
+
+
+            #bylawContent {
+
+                min-height: 230px;
+
+            }
 
         }
 
@@ -143,193 +377,233 @@
 
 <div class="login-container">
 
-    <h1>📜 Manage Bylaws</h1>
+
+    <div class="bylaw-admin-container">
 
 
-    <p id="loadingMessage">
-        Checking administrator access...
-    </p>
+        <h1>📜 Manage Bylaws</h1>
 
 
-    <!-- ======================================
-         ADMIN CONTENT
-    ======================================= -->
-
-    <div id="adminContent" style="display:none;">
+        <p id="loadingMessage">
+            Checking administrator access...
+        </p>
 
 
-        <h2 id="formHeading">
-            Add New Bylaw
-        </h2>
+        <div id="adminContent"
+             style="display:none;">
 
 
-        <!-- ======================================
-             ADD / EDIT BYLAW FORM
-        ======================================= -->
+            <!-- ==================================================
+                 ADD / EDIT FORM
+            ================================================== -->
 
-        <form id="bylawForm">
-
-
-            <input
-                type="text"
-                id="bylawTitle"
-                placeholder="Bylaw Title"
-                required
-            >
+            <h2 id="formHeading">
+                Add New Bylaw
+            </h2>
 
 
-            <!-- ======================================
-                 RICH TEXT TOOLBAR
-            ======================================= -->
+            <form id="bylawForm">
 
-            <div
-                class="editor-toolbar"
-                aria-label="Text formatting tools"
-            >
+
+                <input
+                    type="text"
+                    id="bylawTitle"
+                    placeholder="Bylaw Title"
+                    required
+                >
+
+
+                <!-- ==================================================
+                     FORMATTING TOOLBAR
+                ================================================== -->
+
+                <div
+                    class="editor-toolbar"
+                    aria-label="Text formatting tools"
+                >
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="bold"
+                        title="Bold"
+                        aria-label="Bold"
+                    >
+                        <b>B</b>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="italic"
+                        title="Italic"
+                        aria-label="Italic"
+                    >
+                        <i>I</i>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="underline"
+                        title="Underline"
+                        aria-label="Underline"
+                    >
+                        <u>U</u>
+                    </button>
+
+
+                    <select
+                        id="headingSelect"
+                        title="Text style"
+                        aria-label="Text style"
+                    >
+
+                        <option value="">
+                            Paragraph
+                        </option>
+
+                        <option value="h1">
+                            Heading 1
+                        </option>
+
+                        <option value="h2">
+                            Heading 2
+                        </option>
+
+                        <option value="h3">
+                            Heading 3
+                        </option>
+
+                        <option value="h4">
+                            Heading 4
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="insertUnorderedList"
+                        title="Bullet List"
+                        aria-label="Bullet List"
+                    >
+                        • List
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="insertOrderedList"
+                        title="Numbered List"
+                        aria-label="Numbered List"
+                    >
+                        1. List
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="format-button"
+                        data-command="removeFormat"
+                        title="Clear Formatting"
+                        aria-label="Clear Formatting"
+                    >
+                        Clear
+                    </button>
+
+
+                </div>
+
+
+                <!-- ==================================================
+                     EDITOR
+                ================================================== -->
+
+                <div
+                    id="bylawContent"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-multiline="true"
+                    spellcheck="true"
+                ></div>
+
+
+                <br>
+
+
+                <input
+                    type="number"
+                    id="bylawOrder"
+                    placeholder="Order (e.g. 1, 2, 3...)"
+                    min="1"
+                    step="1"
+                    required
+                >
+
+
+                <br><br>
+
 
                 <button
-                    type="button"
-                    onclick="formatText('bold')"
-                    title="Bold"
+                    type="submit"
+                    id="saveButton"
                 >
-                    <b>B</b>
+                    ➕ Add Bylaw
                 </button>
 
 
                 <button
                     type="button"
-                    onclick="formatText('italic')"
-                    title="Italic"
+                    id="cancelEditButton"
+                    style="display:none;"
                 >
-                    <i>I</i>
+                    Cancel Edit
                 </button>
 
 
-                <button
-                    type="button"
-                    onclick="formatText('underline')"
-                    title="Underline"
-                >
-                    <u>U</u>
-                </button>
+            </form>
 
 
-                <select
-                    id="headingSelect"
-                    onchange="applyHeading(this.value)"
-                >
-
-                    <option value="">
-                        Paragraph
-                    </option>
-
-                    <option value="h1">
-                        Heading 1
-                    </option>
-
-                    <option value="h2">
-                        Heading 2
-                    </option>
-
-                    <option value="h3">
-                        Heading 3
-                    </option>
-
-                </select>
+            <p id="message"></p>
 
 
-                <button
-                    type="button"
-                    onclick="formatText('insertUnorderedList')"
-                    title="Bullet List"
-                >
-                    • List
-                </button>
+            <hr>
 
 
-                <button
-                    type="button"
-                    onclick="formatText('removeFormat')"
-                    title="Remove Formatting"
-                >
-                    Clear
-                </button>
+            <!-- ==================================================
+                 EXISTING BYLAWS
+            ================================================== -->
+
+            <h2>
+                Existing Bylaws
+            </h2>
+
+
+            <div id="bylawsList">
+
+                Loading bylaws...
 
             </div>
-
-
-            <!-- ======================================
-                 EDITABLE CONTENT AREA
-            ======================================= -->
-
-            <div
-                id="bylawContent"
-                contenteditable="true"
-                role="textbox"
-                aria-multiline="true"
-            ></div>
 
 
             <br>
 
 
-            <input
-                type="number"
-                id="bylawOrder"
-                placeholder="Order (e.g. 1, 2, 3...)"
-                min="1"
-                required
-            >
-
-
-            <br><br>
-
-
-            <button type="submit" id="saveButton">
-                ➕ Add Bylaw
-            </button>
-
-
             <button
                 type="button"
-                id="cancelEditButton"
-                style="display:none;"
-                onclick="cancelEdit()"
+                onclick="location.href='admin-dashboard.html'"
             >
-                Cancel Edit
+                ← Admin Dashboard
             </button>
 
 
-        </form>
-
-
-        <p id="message"></p>
-
-
-        <hr>
-
-
-        <!-- ======================================
-             EXISTING BYLAWS
-        ======================================= -->
-
-        <h2>Existing Bylaws</h2>
-
-
-        <div id="bylawsList">
-            Loading bylaws...
         </div>
-
-
-        <br>
-
-
-        <button
-            onclick="location.href='admin-dashboard.html'"
-        >
-            ← Admin Dashboard
-        </button>
-
 
     </div>
 
@@ -339,7 +613,14 @@
 <script type="module">
 
 
-import { auth, db } from "./firebase.js";
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+import {
+    auth,
+    db
+} from "./firebase.js";
 
 
 import {
@@ -359,6 +640,10 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
 const loadingMessage =
     document.getElementById("loadingMessage");
@@ -404,139 +689,433 @@ const cancelEditButton =
     document.getElementById("cancelEditButton");
 
 
+const headingSelect =
+    document.getElementById("headingSelect");
+
+
+/* =========================================================
+   EDITING STATE
+========================================================= */
+
 let editingBylawId = null;
 
 
-// ==========================================
-// CHECK ADMIN LOGIN
-// ==========================================
+/*
+    This stores the exact highlighted selection.
 
-onAuthStateChanged(auth, async (user) => {
+    It is the key part that fixes the problem where
+    only the beginning of a line was being formatted.
+*/
+
+let savedSelection = null;
 
 
-    if (!user) {
+/* =========================================================
+   ADMIN AUTHENTICATION
+========================================================= */
 
-        window.location.href =
-            "admin-login.html";
+onAuthStateChanged(
+    auth,
+    async function(user) {
+
+
+        if (!user) {
+
+            window.location.href =
+                "admin-login.html";
+
+            return;
+
+        }
+
+
+        try {
+
+
+            const adminRef =
+                doc(
+                    db,
+                    "members",
+                    user.uid
+                );
+
+
+            const adminSnap =
+                await getDoc(
+                    adminRef
+                );
+
+
+            if (
+                !adminSnap.exists() ||
+                adminSnap.data().role !== "admin"
+            ) {
+
+
+                alert(
+                    "Administrator access required."
+                );
+
+
+                window.location.href =
+                    "dashboard.html";
+
+
+                return;
+
+            }
+
+
+            loadingMessage.textContent =
+                "";
+
+
+            adminContent.style.display =
+                "block";
+
+
+            await loadBylaws();
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Administrator verification error:",
+                error
+            );
+
+
+            loadingMessage.textContent =
+                "Unable to verify administrator.";
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SELECTION MANAGEMENT
+========================================================= */
+
+
+/*
+    Check whether a selection belongs to our editor.
+*/
+
+function selectionIsInsideEditor(range) {
+
+
+    if (!range) {
+
+        return false;
+
+    }
+
+
+    return (
+        bylawContent.contains(
+            range.commonAncestorContainer
+        )
+    );
+
+}
+
+
+/*
+    Save the currently highlighted text.
+*/
+
+function saveCurrentSelection() {
+
+
+    const selection =
+        window.getSelection();
+
+
+    if (
+        !selection ||
+        selection.rangeCount === 0
+    ) {
 
         return;
 
     }
 
 
-    try {
+    const range =
+        selection.getRangeAt(0);
 
 
-        const adminRef =
-            doc(db, "members", user.uid);
+    if (
+        selectionIsInsideEditor(range)
+    ) {
 
 
-        const adminSnap =
-            await getDoc(adminRef);
-
-
-        if (
-            !adminSnap.exists() ||
-            adminSnap.data().role !== "admin"
-        ) {
-
-            alert(
-                "Administrator access required."
-            );
-
-
-            window.location.href =
-                "dashboard.html";
-
-
-            return;
-
-        }
-
-
-        loadingMessage.textContent = "";
-
-
-        adminContent.style.display =
-            "block";
-
-
-        await loadBylaws();
-
-
-    } catch (error) {
-
-
-        console.error(
-            "Administrator verification error:",
-            error
-        );
-
-
-        loadingMessage.textContent =
-            "Unable to verify administrator.";
+        savedSelection =
+            range.cloneRange();
 
     }
 
-});
+}
 
 
-// ==========================================
-// TEXT FORMATTING
-// ==========================================
+/*
+    Restore the highlighted text.
+*/
 
-window.formatText =
-    function(command) {
-
-
-        bylawContent.focus();
+function restoreSavedSelection() {
 
 
-        document.execCommand(
-            command,
-            false,
-            null
+    if (!savedSelection) {
+
+        return false;
+
+    }
+
+
+    if (
+        !selectionIsInsideEditor(
+            savedSelection
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    const selection =
+        window.getSelection();
+
+
+    selection.removeAllRanges();
+
+
+    selection.addRange(
+        savedSelection
+    );
+
+
+    return true;
+
+}
+
+
+/*
+    The browser fires selectionchange whenever the
+    highlighted area changes.
+
+    We save it continuously while the admin works.
+*/
+
+document.addEventListener(
+    "selectionchange",
+    function() {
+
+        saveCurrentSelection();
+
+    }
+);
+
+
+/*
+    Additional ways of capturing selection,
+    especially useful on mobile browsers.
+*/
+
+bylawContent.addEventListener(
+    "mouseup",
+    saveCurrentSelection
+);
+
+
+bylawContent.addEventListener(
+    "keyup",
+    saveCurrentSelection
+);
+
+
+bylawContent.addEventListener(
+    "touchend",
+    function() {
+
+        setTimeout(
+            saveCurrentSelection,
+            0
         );
 
-
-    };
-
-
-// ==========================================
-// HEADINGS
-// ==========================================
-
-window.applyHeading =
-    function(tag) {
+    }
+);
 
 
-        if (!tag) {
+/* =========================================================
+   FORMATTING COMMANDS
+========================================================= */
+
+
+/*
+    Apply B / I / U / Lists / Clear.
+
+    IMPORTANT:
+    We use pointerdown rather than simply clicking the
+    button because clicking the toolbar can otherwise
+    cause the browser to lose the highlighted selection.
+*/
+
+document
+    .querySelectorAll(".format-button")
+    .forEach(function(button) {
+
+
+        button.addEventListener(
+            "pointerdown",
+            function(event) {
+
+
+                /*
+                    Stop the toolbar button from stealing
+                    the editor selection.
+                */
+
+                event.preventDefault();
+
+
+                /*
+                    Capture selection immediately before
+                    formatting.
+                */
+
+                saveCurrentSelection();
+
+
+                /*
+                    Put the exact highlighted text back.
+                */
+
+                restoreSavedSelection();
+
+
+                const command =
+                    button.dataset.command;
+
+
+                try {
+
+
+                    document.execCommand(
+                        command,
+                        false,
+                        null
+                    );
+
+
+                } catch (error) {
+
+
+                    console.error(
+                        "Formatting error:",
+                        error
+                    );
+
+                }
+
+
+                /*
+                    Save the new selection after formatting.
+                */
+
+                saveCurrentSelection();
+
+
+                bylawContent.focus();
+
+            }
+
+        );
+
+    });
+
+
+/* =========================================================
+   HEADINGS
+========================================================= */
+
+headingSelect.addEventListener(
+    "change",
+    function() {
+
+
+        const selectedHeading =
+            this.value;
+
+
+        if (!selectedHeading) {
 
             return;
 
         }
 
 
+        /*
+            Restore the selection that existed before
+            the dropdown was touched.
+        */
+
+        restoreSavedSelection();
+
+
+        try {
+
+
+            document.execCommand(
+                "formatBlock",
+                false,
+                selectedHeading
+            );
+
+
+        } catch (error) {
+
+
+            console.error(
+                "Heading formatting error:",
+                error
+            );
+
+        }
+
+
+        saveCurrentSelection();
+
+
         bylawContent.focus();
 
 
-        document.execCommand(
-            "formatBlock",
-            false,
-            tag
-        );
+        this.value = "";
+
+    }
+);
 
 
-        document.getElementById(
-            "headingSelect"
-        ).value = "";
+/*
+    Save the selection before the heading menu receives focus.
+*/
 
-    };
+headingSelect.addEventListener(
+    "pointerdown",
+    function() {
+
+        saveCurrentSelection();
+
+    }
+);
 
 
-// ==========================================
-// ADD / UPDATE BYLAW
-// ==========================================
+/* =========================================================
+   ADD / UPDATE BYLAW
+========================================================= */
 
 bylawForm.addEventListener(
     "submit",
@@ -549,6 +1128,13 @@ bylawForm.addEventListener(
         const title =
             bylawTitle.value.trim();
 
+
+        /*
+            Take exactly what the administrator created
+            in the rich-text editor.
+
+            Then sanitize it before storing it.
+        */
 
         const content =
             sanitizeHTML(
@@ -565,1825 +1151,10 @@ bylawForm.addEventListener(
         if (
             !title ||
             !stripHTML(content).trim() ||
+            !Number.isInteger(order) ||
             order < 1
         ) {
 
 
             message.textContent =
-                "Please provide all bylaw information.";
-
-
-            return;
-
-        }
-
-
-        message.textContent =
-            editingBylawId
-                ? "Updating bylaw..."
-                : "Adding bylaw...";
-
-
-        try {
-
-
-            if (editingBylawId) {
-
-
-                const bylawRef =
-                    doc(
-                        db,
-                        "bylaws",
-                        editingBylawId
-                    );
-
-
-                await updateDoc(
-                    bylawRef,
-                    {
-
-                        title:
-                            title,
-
-                        content:
-                            content,
-
-                        order:
-                            order
-
-                    }
-                );
-
-
-                message.textContent =
-                    "✅ Bylaw updated successfully.";
-
-
-            } else {
-
-
-                await addDoc(
-                    collection(
-                        db,
-                        "bylaws"
-                    ),
-                    {
-
-                        title:
-                            title,
-
-                        content:
-                            content,
-
-                        order:
-                            order
-
-                    }
-                );
-
-
-                message.textContent =
-                    "✅ Bylaw added successfully.";
-
-            }
-
-
-            resetForm();
-
-
-            await loadBylaws();
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Save bylaw error:",
-                error
-            );
-
-
-            message.textContent =
-                "❌ Unable to save bylaw: " +
-                error.message;
-
-        }
-
-    }
-);
-
-
-// ==========================================
-// LOAD EXISTING BYLAWS
-// ==========================================
-
-async function loadBylaws() {
-
-
-    try {
-
-
-        const bylawsQuery =
-            query(
-                collection(
-                    db,
-                    "bylaws"
-                ),
-                orderBy("order")
-            );
-
-
-        const snapshot =
-            await getDocs(
-                bylawsQuery
-            );
-
-
-        if (snapshot.empty) {
-
-
-            bylawsList.innerHTML = `
-
-                <p>
-                    No bylaws have been added yet.
-                </p>
-
-            `;
-
-
-            return;
-
-        }
-
-
-        let html = "";
-
-
-        snapshot.forEach(
-            (bylawDoc) => {
-
-
-                const bylaw =
-                    bylawDoc.data();
-
-
-                html += `
-
-                    <div
-                        style="
-                            border: 1px solid #ccc;
-                            padding: 15px;
-                            margin-bottom: 20px;
-                            border-radius: 8px;
-                        "
-                    >
-
-                        <h3>
-                            ${escapeHTML(
-                                bylaw.title || ""
-                            )}
-                        </h3>
-
-
-                        <div
-                            class="bylaw-content"
-                        >
-
-                            ${sanitizeHTML(
-                                bylaw.content || ""
-                            )}
-
-                        </div>
-
-
-                        <p>
-
-                            <strong>
-                                Order:
-                            </strong>
-
-                            ${Number(
-                                bylaw.order || 0
-                            )}
-
-                        </p>
-
-
-                        <button
-                            onclick="editBylaw('${bylawDoc.id}')"
-                        >
-                            ✏️ Edit
-                        </button>
-
-
-                        <button
-                            onclick="deleteBylaw('${bylawDoc.id}')"
-                        >
-                            🗑️ Delete
-                        </button>
-
-
-                    </div>
-
-                `;
-
-            }
-        );
-
-
-        bylawsList.innerHTML =
-            html;
-
-
-    } catch (error) {
-
-
-        console.error(
-            "Loading bylaws error:",
-            error
-        );
-
-
-        bylawsList.innerHTML = `
-
-            <p>
-                ❌ Unable to load bylaws.
-            </p>
-
-            <p>
-                ${escapeHTML(
-                    error.message
-                )}
-            </p>
-
-        `;
-
-    }
-
-}
-
-
-// ==========================================
-// EDIT BYLAW
-// ==========================================
-
-window.editBylaw =
-    async function(bylawId) {
-
-
-        try {
-
-
-            const bylawRef =
-                doc(
-                    db,
-                    "bylaws",
-                    bylawId
-                );
-
-
-            const bylawSnap =
-                await getDoc(
-                    bylawRef
-                );
-
-
-            if (!bylawSnap.exists()) {
-
-
-                alert(
-                    "Bylaw no longer exists."
-                );
-
-
-                return;
-
-            }
-
-
-            const bylaw =
-                bylawSnap.data();
-
-
-            bylawTitle.value =
-                bylaw.title || "";
-
-
-            bylawContent.innerHTML =
-                sanitizeHTML(
-                    bylaw.content || ""
-                );
-
-
-            bylawOrder.value =
-                bylaw.order || 1;
-
-
-            editingBylawId =
-                bylawId;
-
-
-            formHeading.textContent =
-                "✏️ Edit Bylaw";
-
-
-            saveButton.textContent =
-                "💾 Update Bylaw";
-
-
-            cancelEditButton.style.display =
-                "inline-block";
-
-
-            message.textContent =
-                "Editing selected bylaw.";
-
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Edit bylaw error:",
-                error
-            );
-
-
-            alert(
-                "Unable to load bylaw: " +
-                error.message
-            );
-
-        }
-
-    };
-
-
-// ==========================================
-// CANCEL EDIT
-// ==========================================
-
-window.cancelEdit =
-    function() {
-
-
-        resetForm();
-
-
-        message.textContent =
-            "Edit cancelled.";
-
-    };
-
-
-// ==========================================
-// RESET FORM
-// ==========================================
-
-function resetForm() {
-
-
-    bylawForm.reset();
-
-
-    bylawContent.innerHTML =
-        "";
-
-
-    editingBylawId =
-        null;
-
-
-    formHeading.textContent =
-        "Add New Bylaw";
-
-
-    saveButton.textContent =
-        "➕ Add Bylaw";
-
-
-    cancelEditButton.style.display =
-        "none";
-
-
-    document.getElementById(
-        "headingSelect"
-    ).value = "";
-
-}
-
-
-// ==========================================
-// DELETE BYLAW
-// ==========================================
-
-window.deleteBylaw =
-    async function(bylawId) {
-
-
-        const confirmed =
-            confirm(
-                "Are you sure you want to delete this bylaw?"
-            );
-
-
-        if (!confirmed) {
-
-            return;
-
-        }
-
-
-        try {
-
-
-            await deleteDoc(
-                doc(
-                    db,
-                    "bylaws",
-                    bylawId
-                )
-            );
-
-
-            alert(
-                "Bylaw deleted successfully."
-            );
-
-
-            await loadBylaws();
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Delete bylaw error:",
-                error
-            );
-
-
-            alert(
-                "Unable to delete bylaw: " +
-                error.message
-            );
-
-        }
-
-    };
-
-
-// ==========================================
-// SAFE HTML SANITIZER
-// ==========================================
-
-function sanitizeHTML(html) {
-
-
-    const template =
-        document.createElement(
-            "template"
-        );
-
-
-    template.innerHTML =
-        html;
-
-
-    const allowedTags = [
-
-        "B",
-        "STRONG",
-        "I",
-        "EM",
-        "U",
-        "H1",
-        "H2",
-        "H3",
-        "UL",
-        "LI",
-        "BR",
-        "P"
-
-    ];
-
-
-    const elements =
-        template.content.querySelectorAll("*");
-
-
-    elements.forEach(
-        (element) => {
-
-
-            if (
-                !allowedTags.includes(
-                    element.tagName
-                )
-            ) {
-
-
-                const text =
-                    document.createTextNode(
-                        element.textContent
-                    );
-
-
-                element.replaceWith(
-                    text
-                );
-
-
-                return;
-
-            }
-
-
-            // Remove all attributes.
-            // This prevents unsafe attributes
-            // such as onclick or javascript URLs.
-
-            [...element.attributes]
-                .forEach(
-                    attribute => {
-
-                        element.removeAttribute(
-                            attribute.name
-                        );
-
-                    }
-                );
-
-        }
-    );
-
-
-    return template.innerHTML;
-
-}
-
-
-// ==========================================
-// ESCAPE PLAIN HTML
-// ==========================================
-
-function escapeHTML(value) {
-
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-// ==========================================
-// REMOVE HTML FOR VALIDATION
-// ==========================================
-
-function stripHTML(value) {
-
-
-    const temporary =
-        document.createElement(
-            "div"
-        );
-
-
-    temporary.innerHTML =
-        value;
-
-
-    return temporary.textContent ||
-           temporary.innerText ||
-           "";
-
-}
-
-</script>
-
-
-</body>
-
-</html><html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Manage Bylaws - Mwitari's Heritage</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <style>
-
-        /* ==========================================
-           RICH TEXT EDITOR
-        ========================================== */
-
-        .editor-toolbar {
-
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 6px;
-
-            margin-bottom: 8px;
-
-        }
-
-
-        .editor-toolbar button {
-
-            min-width: 42px;
-
-            padding: 8px 10px;
-
-            border: 1px solid #ccc;
-
-            border-radius: 5px;
-
-            background: #f5f5f5;
-
-            cursor: pointer;
-
-            font-size: 15px;
-
-        }
-
-
-        .editor-toolbar button:hover {
-
-            background: #e0e0e0;
-
-        }
-
-
-        .editor-toolbar select {
-
-            padding: 8px;
-
-            border: 1px solid #ccc;
-
-            border-radius: 5px;
-
-        }
-
-
-        #bylawContent {
-
-            width: 100%;
-
-            min-height: 220px;
-
-            padding: 12px;
-
-            border: 1px solid #ccc;
-
-            border-radius: 6px;
-
-            background: white;
-
-            color: black;
-
-            text-align: left;
-
-            overflow-y: auto;
-
-        }
-
-
-        #bylawContent:focus {
-
-            outline: 2px solid #777;
-
-        }
-
-
-        #bylawContent h1 {
-
-            font-size: 28px;
-
-        }
-
-
-        #bylawContent h2 {
-
-            font-size: 24px;
-
-        }
-
-
-        #bylawContent h3 {
-
-            font-size: 20px;
-
-        }
-
-
-        .bylaw-content {
-
-            text-align: left;
-
-        }
-
-
-        .bylaw-content ul {
-
-            padding-left: 25px;
-
-        }
-
-    </style>
-
-</head>
-
-
-<body>
-
-
-<div class="login-container">
-
-    <h1>📜 Manage Bylaws</h1>
-
-
-    <p id="loadingMessage">
-        Checking administrator access...
-    </p>
-
-
-    <!-- ======================================
-         ADMIN CONTENT
-    ======================================= -->
-
-    <div id="adminContent" style="display:none;">
-
-
-        <h2 id="formHeading">
-            Add New Bylaw
-        </h2>
-
-
-        <!-- ======================================
-             ADD / EDIT BYLAW FORM
-        ======================================= -->
-
-        <form id="bylawForm">
-
-
-            <input
-                type="text"
-                id="bylawTitle"
-                placeholder="Bylaw Title"
-                required
-            >
-
-
-            <!-- ======================================
-                 RICH TEXT TOOLBAR
-            ======================================= -->
-
-            <div
-                class="editor-toolbar"
-                aria-label="Text formatting tools"
-            >
-
-                <button
-                    type="button"
-                    onclick="formatText('bold')"
-                    title="Bold"
-                >
-                    <b>B</b>
-                </button>
-
-
-                <button
-                    type="button"
-                    onclick="formatText('italic')"
-                    title="Italic"
-                >
-                    <i>I</i>
-                </button>
-
-
-                <button
-                    type="button"
-                    onclick="formatText('underline')"
-                    title="Underline"
-                >
-                    <u>U</u>
-                </button>
-
-
-                <select
-                    id="headingSelect"
-                    onchange="applyHeading(this.value)"
-                >
-
-                    <option value="">
-                        Paragraph
-                    </option>
-
-                    <option value="h1">
-                        Heading 1
-                    </option>
-
-                    <option value="h2">
-                        Heading 2
-                    </option>
-
-                    <option value="h3">
-                        Heading 3
-                    </option>
-
-                </select>
-
-
-                <button
-                    type="button"
-                    onclick="formatText('insertUnorderedList')"
-                    title="Bullet List"
-                >
-                    • List
-                </button>
-
-
-                <button
-                    type="button"
-                    onclick="formatText('removeFormat')"
-                    title="Remove Formatting"
-                >
-                    Clear
-                </button>
-
-            </div>
-
-
-            <!-- ======================================
-                 EDITABLE CONTENT AREA
-            ======================================= -->
-
-            <div
-                id="bylawContent"
-                contenteditable="true"
-                role="textbox"
-                aria-multiline="true"
-            ></div>
-
-
-            <br>
-
-
-            <input
-                type="number"
-                id="bylawOrder"
-                placeholder="Order (e.g. 1, 2, 3...)"
-                min="1"
-                required
-            >
-
-
-            <br><br>
-
-
-            <button type="submit" id="saveButton">
-                ➕ Add Bylaw
-            </button>
-
-
-            <button
-                type="button"
-                id="cancelEditButton"
-                style="display:none;"
-                onclick="cancelEdit()"
-            >
-                Cancel Edit
-            </button>
-
-
-        </form>
-
-
-        <p id="message"></p>
-
-
-        <hr>
-
-
-        <!-- ======================================
-             EXISTING BYLAWS
-        ======================================= -->
-
-        <h2>Existing Bylaws</h2>
-
-
-        <div id="bylawsList">
-            Loading bylaws...
-        </div>
-
-
-        <br>
-
-
-        <button
-            onclick="location.href='admin-dashboard.html'"
-        >
-            ← Admin Dashboard
-        </button>
-
-
-    </div>
-
-</div>
-
-
-<script type="module">
-
-
-import { auth, db } from "./firebase.js";
-
-
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-
-import {
-    collection,
-    getDocs,
-    doc,
-    getDoc,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    query,
-    orderBy
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-
-const loadingMessage =
-    document.getElementById("loadingMessage");
-
-
-const adminContent =
-    document.getElementById("adminContent");
-
-
-const bylawForm =
-    document.getElementById("bylawForm");
-
-
-const message =
-    document.getElementById("message");
-
-
-const bylawsList =
-    document.getElementById("bylawsList");
-
-
-const bylawTitle =
-    document.getElementById("bylawTitle");
-
-
-const bylawContent =
-    document.getElementById("bylawContent");
-
-
-const bylawOrder =
-    document.getElementById("bylawOrder");
-
-
-const formHeading =
-    document.getElementById("formHeading");
-
-
-const saveButton =
-    document.getElementById("saveButton");
-
-
-const cancelEditButton =
-    document.getElementById("cancelEditButton");
-
-
-let editingBylawId = null;
-
-
-// ==========================================
-// CHECK ADMIN LOGIN
-// ==========================================
-
-onAuthStateChanged(auth, async (user) => {
-
-
-    if (!user) {
-
-        window.location.href =
-            "admin-login.html";
-
-        return;
-
-    }
-
-
-    try {
-
-
-        const adminRef =
-            doc(db, "members", user.uid);
-
-
-        const adminSnap =
-            await getDoc(adminRef);
-
-
-        if (
-            !adminSnap.exists() ||
-            adminSnap.data().role !== "admin"
-        ) {
-
-            alert(
-                "Administrator access required."
-            );
-
-
-            window.location.href =
-                "dashboard.html";
-
-
-            return;
-
-        }
-
-
-        loadingMessage.textContent = "";
-
-
-        adminContent.style.display =
-            "block";
-
-
-        await loadBylaws();
-
-
-    } catch (error) {
-
-
-        console.error(
-            "Administrator verification error:",
-            error
-        );
-
-
-        loadingMessage.textContent =
-            "Unable to verify administrator.";
-
-    }
-
-});
-
-
-// ==========================================
-// TEXT FORMATTING
-// ==========================================
-
-window.formatText =
-    function(command) {
-
-
-        bylawContent.focus();
-
-
-        document.execCommand(
-            command,
-            false,
-            null
-        );
-
-
-    };
-
-
-// ==========================================
-// HEADINGS
-// ==========================================
-
-window.applyHeading =
-    function(tag) {
-
-
-        if (!tag) {
-
-            return;
-
-        }
-
-
-        bylawContent.focus();
-
-
-        document.execCommand(
-            "formatBlock",
-            false,
-            tag
-        );
-
-
-        document.getElementById(
-            "headingSelect"
-        ).value = "";
-
-    };
-
-
-// ==========================================
-// ADD / UPDATE BYLAW
-// ==========================================
-
-bylawForm.addEventListener(
-    "submit",
-    async function(event) {
-
-
-        event.preventDefault();
-
-
-        const title =
-            bylawTitle.value.trim();
-
-
-        const content =
-            sanitizeHTML(
-                bylawContent.innerHTML
-            );
-
-
-        const order =
-            Number(
-                bylawOrder.value
-            );
-
-
-        if (
-            !title ||
-            !stripHTML(content).trim() ||
-            order < 1
-        ) {
-
-
-            message.textContent =
-                "Please provide all bylaw information.";
-
-
-            return;
-
-        }
-
-
-        message.textContent =
-            editingBylawId
-                ? "Updating bylaw..."
-                : "Adding bylaw...";
-
-
-        try {
-
-
-            if (editingBylawId) {
-
-
-                const bylawRef =
-                    doc(
-                        db,
-                        "bylaws",
-                        editingBylawId
-                    );
-
-
-                await updateDoc(
-                    bylawRef,
-                    {
-
-                        title:
-                            title,
-
-                        content:
-                            content,
-
-                        order:
-                            order
-
-                    }
-                );
-
-
-                message.textContent =
-                    "✅ Bylaw updated successfully.";
-
-
-            } else {
-
-
-                await addDoc(
-                    collection(
-                        db,
-                        "bylaws"
-                    ),
-                    {
-
-                        title:
-                            title,
-
-                        content:
-                            content,
-
-                        order:
-                            order
-
-                    }
-                );
-
-
-                message.textContent =
-                    "✅ Bylaw added successfully.";
-
-            }
-
-
-            resetForm();
-
-
-            await loadBylaws();
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Save bylaw error:",
-                error
-            );
-
-
-            message.textContent =
-                "❌ Unable to save bylaw: " +
-                error.message;
-
-        }
-
-    }
-);
-
-
-// ==========================================
-// LOAD EXISTING BYLAWS
-// ==========================================
-
-async function loadBylaws() {
-
-
-    try {
-
-
-        const bylawsQuery =
-            query(
-                collection(
-                    db,
-                    "bylaws"
-                ),
-                orderBy("order")
-            );
-
-
-        const snapshot =
-            await getDocs(
-                bylawsQuery
-            );
-
-
-        if (snapshot.empty) {
-
-
-            bylawsList.innerHTML = `
-
-                <p>
-                    No bylaws have been added yet.
-                </p>
-
-            `;
-
-
-            return;
-
-        }
-
-
-        let html = "";
-
-
-        snapshot.forEach(
-            (bylawDoc) => {
-
-
-                const bylaw =
-                    bylawDoc.data();
-
-
-                html += `
-
-                    <div
-                        style="
-                            border: 1px solid #ccc;
-                            padding: 15px;
-                            margin-bottom: 20px;
-                            border-radius: 8px;
-                        "
-                    >
-
-                        <h3>
-                            ${escapeHTML(
-                                bylaw.title || ""
-                            )}
-                        </h3>
-
-
-                        <div
-                            class="bylaw-content"
-                        >
-
-                            ${sanitizeHTML(
-                                bylaw.content || ""
-                            )}
-
-                        </div>
-
-
-                        <p>
-
-                            <strong>
-                                Order:
-                            </strong>
-
-                            ${Number(
-                                bylaw.order || 0
-                            )}
-
-                        </p>
-
-
-                        <button
-                            onclick="editBylaw('${bylawDoc.id}')"
-                        >
-                            ✏️ Edit
-                        </button>
-
-
-                        <button
-                            onclick="deleteBylaw('${bylawDoc.id}')"
-                        >
-                            🗑️ Delete
-                        </button>
-
-
-                    </div>
-
-                `;
-
-            }
-        );
-
-
-        bylawsList.innerHTML =
-            html;
-
-
-    } catch (error) {
-
-
-        console.error(
-            "Loading bylaws error:",
-            error
-        );
-
-
-        bylawsList.innerHTML = `
-
-            <p>
-                ❌ Unable to load bylaws.
-            </p>
-
-            <p>
-                ${escapeHTML(
-                    error.message
-                )}
-            </p>
-
-        `;
-
-    }
-
-}
-
-
-// ==========================================
-// EDIT BYLAW
-// ==========================================
-
-window.editBylaw =
-    async function(bylawId) {
-
-
-        try {
-
-
-            const bylawRef =
-                doc(
-                    db,
-                    "bylaws",
-                    bylawId
-                );
-
-
-            const bylawSnap =
-                await getDoc(
-                    bylawRef
-                );
-
-
-            if (!bylawSnap.exists()) {
-
-
-                alert(
-                    "Bylaw no longer exists."
-                );
-
-
-                return;
-
-            }
-
-
-            const bylaw =
-                bylawSnap.data();
-
-
-            bylawTitle.value =
-                bylaw.title || "";
-
-
-            bylawContent.innerHTML =
-                sanitizeHTML(
-                    bylaw.content || ""
-                );
-
-
-            bylawOrder.value =
-                bylaw.order || 1;
-
-
-            editingBylawId =
-                bylawId;
-
-
-            formHeading.textContent =
-                "✏️ Edit Bylaw";
-
-
-            saveButton.textContent =
-                "💾 Update Bylaw";
-
-
-            cancelEditButton.style.display =
-                "inline-block";
-
-
-            message.textContent =
-                "Editing selected bylaw.";
-
-
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Edit bylaw error:",
-                error
-            );
-
-
-            alert(
-                "Unable to load bylaw: " +
-                error.message
-            );
-
-        }
-
-    };
-
-
-// ==========================================
-// CANCEL EDIT
-// ==========================================
-
-window.cancelEdit =
-    function() {
-
-
-        resetForm();
-
-
-        message.textContent =
-            "Edit cancelled.";
-
-    };
-
-
-// ==========================================
-// RESET FORM
-// ==========================================
-
-function resetForm() {
-
-
-    bylawForm.reset();
-
-
-    bylawContent.innerHTML =
-        "";
-
-
-    editingBylawId =
-        null;
-
-
-    formHeading.textContent =
-        "Add New Bylaw";
-
-
-    saveButton.textContent =
-        "➕ Add Bylaw";
-
-
-    cancelEditButton.style.display =
-        "none";
-
-
-    document.getElementById(
-        "headingSelect"
-    ).value = "";
-
-}
-
-
-// ==========================================
-// DELETE BYLAW
-// ==========================================
-
-window.deleteBylaw =
-    async function(bylawId) {
-
-
-        const confirmed =
-            confirm(
-                "Are you sure you want to delete this bylaw?"
-            );
-
-
-        if (!confirmed) {
-
-            return;
-
-        }
-
-
-        try {
-
-
-            await deleteDoc(
-                doc(
-                    db,
-                    "bylaws",
-                    bylawId
-                )
-            );
-
-
-            alert(
-                "Bylaw deleted successfully."
-            );
-
-
-            await loadBylaws();
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Delete bylaw error:",
-                error
-            );
-
-
-            alert(
-                "Unable to delete bylaw: " +
-                error.message
-            );
-
-        }
-
-    };
-
-
-// ==========================================
-// SAFE HTML SANITIZER
-// ==========================================
-
-function sanitizeHTML(html) {
-
-
-    const template =
-        document.createElement(
-            "template"
-        );
-
-
-    template.innerHTML =
-        html;
-
-
-    const allowedTags = [
-
-        "B",
-        "STRONG",
-        "I",
-        "EM",
-        "U",
-        "H1",
-        "H2",
-        "H3",
-        "UL",
-        "LI",
-        "BR",
-        "P"
-
-    ];
-
-
-    const elements =
-        template.content.querySelectorAll("*");
-
-
-    elements.forEach(
-        (element) => {
-
-
-            if (
-                !allowedTags.includes(
-                    element.tagName
-                )
-            ) {
-
-
-                const text =
-                    document.createTextNode(
-                        element.textContent
-                    );
-
-
-                element.replaceWith(
-                    text
-                );
-
-
-                return;
-
-            }
-
-
-            // Remove all attributes.
-            // This prevents unsafe attributes
-            // such as onclick or javascript URLs.
-
-            [...element.attributes]
-                .forEach(
-                    attribute => {
-
-                        element.removeAttribute(
-                            attribute.name
-                        );
-
-                    }
-                );
-
-        }
-    );
-
-
-    return template.innerHTML;
-
-}
-
-
-// ==========================================
-// ESCAPE PLAIN HTML
-// ==========================================
-
-function escapeHTML(value) {
-
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-// ==========================================
-// REMOVE HTML FOR VALIDATION
-// ==========================================
-
-function stripHTML(value) {
-
-
-    const temporary =
-        document.createElement(
-            "div"
-        );
-
-
-    temporary.innerHTML =
-        value;
-
-
-    return temporary.textContent ||
-           temporary.innerText ||
-           "";
-
-}
-
-</script>
-
-
-</body>
-
-</html>
+                "Please provide all bylaw i
