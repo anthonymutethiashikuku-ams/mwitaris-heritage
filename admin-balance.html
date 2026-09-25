@@ -124,7 +124,7 @@ async function loadBalances() {
                 Number(data.loanPaid) || 0;
 
             const balance =
-                Math.max(loan - paid, 0);
+                Math.max(loan+(loan*10/100)+100-paid, 0);
 
             const savings =
                 Number(data.savingsBalance) || 0;
